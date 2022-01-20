@@ -65,7 +65,7 @@ class NOAAData(object):
 def getNOAAData(m, y, s):
     mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
     day = {'JAN':'01-31','FEB':'01-28','MAR':'01-31','APR':'01-30','MAY':'01-31','JUN':'01-30','JUL':'01-31','AUG':'01-31','SEP':'01-30','OCT':'01-31','NOV':'01-30','DEC':'01-31'}
-    sta = {'DETROIT METRO AP MI':'USW00094847','PENDLETON AIRPORT':'USW00024155','LAS VEGAS INTL AIRPORT NV':'USW00023169'}                                         
+    sta = {'DETROIT METRO AP MI':'USW00094847','PENDLETON OR': 'USW00024155','CORPUS CHRISTI NWS TX':'USC00412011','LAS VEGAS INTL AIRPORT NV':'USW00023169','MIAMI NWSFO FL':'USC00085667'}                                         
     noaa = NOAAData()
     noaa.stationData('GHCND', (f'GHCND:{sta[s]}'), (f'{y}-{mon[m]}-{day[m][0:2]}') , (f'{y}-{mon[m]}-{day[m][3:5]}'), 1000)
     return noaa
@@ -104,6 +104,18 @@ def getPlot(noaa, station, year, month):
     TMIN = noaa.filterDF('TMIN')
     TMIN['TMIN'] = TMIN.apply(lambda d: (d['value'] * .18) + 32, axis=1)
     TMIN = TMIN.drop(['value','datatype'], axis=1)
+    
+    #fig, ax = plt.subplots(figsize=(12,8))
+    #AWND.plot(ax=ax, linewidth=3, x='dayYear', linestyle='--', color='grey',y='AWND')
+    #WSF5.plot(ax=ax, linewidth=3, x='dayYear', linestyle='-', color='orange',y='WSF5')
+    #WSF2.plot(ax=ax, linewidth=3, x='dayYear', linestyle='-', color='green',y='WSF2')
+    #TAVG.plot(ax=ax, linewidth=3, x='dayYear', color='black', y='TAVG')
+    #TMAX.plot(ax=ax, kind='bar',x='dayYear', color='red', y='TMAX')
+    #TMIN.plot(ax=ax, kind='bar',x='dayYear', color='blue',y='TMIN')
+    #SNOW.plot(ax=ax, linewidth=3, x='dayYear', linestyle='--', color='purple',y='SNOW')
+    #PRCP.plot(ax=ax, linewidth=3, x='dayYear', linestyle='-', color='blue',y='PRCP')
+    #plt.xticks(rotation = 90) 
+    #plt.title((f'{station}'), fontsize=26, color='black')
     
     # merge all dataframes into one dataframe to rule them all!
     dfs= [AWND, WSF5, WSF2, TAVG, TMAX, TMIN, SNOW, PRCP]
@@ -174,21 +186,43 @@ def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, d
     plt.gca().spines['right'].set_visible(False)
     plt.gca().spines['bottom'].set_visible(False)
     st.pyplot(fig)
-    st.markdown('---')
-    st.write(f'<p style="text-align:center">WEATHER DATA TABLE</p>', unsafe_allow_html=True)
-    st.write(dfM)
-    
 
-### MAIN APP SECTION
+    st.write(dfM)
+ 
+    #st.write(f'## {station} - {month} {year}')
+    #maxTemp = alt.Chart(TMAX).mark_bar(color='red',opacity=0.7, size=10).encode(
+    #    #x='dayYear',y='TMAX')
+    #    alt.Y('TMAX:Q', scale=alt.Scale(domain=(-10, 120))), x='dayYear')
+    #minTemp = alt.Chart(TMIN).mark_bar(color='blue',opacity=0.7,size=10).encode(x='dayYear', y='TMIN')
+    #avgTemp = alt.Chart(TAVG).mark_line(color='purple').encode(x='dayYear', y='TAVG').properties(height=400, title='DAILY TEMPERATURE (F)')
+    #tempChart = maxTemp + minTemp + avgTemp 
+    #st.altair_chart(tempChart, use_container_width=True)
+    #
+    #maxWind = alt.Chart(WSF5).mark_bar(color='orange',opacity=0.8, size=10).encode(
+    #    alt.Y('WSF5:Q',scale=alt.Scale(domain=(0, 80))), x='dayYear')
+    #susWind = alt.Chart(WSF2).mark_bar(color='yellow',opacity=0.7,size=10).encode(x='dayYear', y='WSF2')
+    #avgWind = alt.Chart(AWND).mark_line(color='grey').encode(x='dayYear', y='AWND').properties(height=400, title='DAILY WIND SPEED (mph)')
+    #windChart = maxWind + susWind + avgWind 
+    #st.altair_chart(windChart, use_container_width=True)
+
+    #dayPrecip = alt.Chart(PRCP).mark_bar(color='green',opacity=0.8, size=10).encode(
+    #    y='PRCP',x='dayYear')
+    #    #alt.Y('PRCP:Q', scale=alt.Scale(domain=(0, 100))), x='dayYear')
+    #daySnow = alt.Chart(SNOW).mark_bar(color='grey',opacity=0.7,size=10).encode(x='dayYear', y='SNOW').properties(height=400, title='DAILY PRECIP/SNOW (mm)')
+    #daySnow = alt.Chart(SNOW).mark_line(color='grey').encode(x='dayYear', y='SNOW').properties(height=400)
+    #snowChart = dayPrecip + daySnow
+    #st.altair_chart(snowChart, use_container_width=True)
+    
 st.write(f'<h1 style="text-align:center">HISTORIC WEATHER SUITABILITY</h2>', unsafe_allow_html=True)
-st.write(f'<p style="text-align:center">Data: NOAA Global Historical Climate Network (GHCN) - Daily land surface observations</p>', unsafe_allow_html=True)
+
+st.markdown('Data: NOAA Global Historical Climate Network (GHCN) - Daily land surface observations')
 
 station = st.sidebar.selectbox(
      'SELECT STATION',
-     ('PENDLETON AIRPORT','DETROIT METRO AP MI','LAS VEGAS INTL AIRPORT NV'))     
+     ('PENDLETON OR','DETROIT METRO AP MI','LAS VEGAS INTL AIRPORT NV'))     
 year = st.sidebar.selectbox(
      'SELECT YEAR',
-     ('2021','2020','2019','2018','2017','2016','2015','2014'))
+     ('2021','2020','2019','2018','2017'))
 month = st.sidebar.select_slider(
      'SELECT MONTH',
      options=['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL','AUG','SEP','OCT','NOV','DEC'])

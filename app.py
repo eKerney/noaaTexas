@@ -225,7 +225,6 @@ def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, d
         st.write(f'<p style="text-align:center;font-family:sans-serif;font-weight:bold">WEATHER DATA TABLE - {station} - {month} {year}</p>', unsafe_allow_html=True)
         st.write(dfM)
         
-    st.markdown('---')
     
 ### MAIN APP SECTION
 st.set_page_config(layout="wide")

@@ -63,56 +63,79 @@ class NOAAData(object):
     # weatherData = noaa.fetch_data(datasetid='GHCND', stationid='GHCND:USW00024155', startdate='2022-01-01', enddate='2022-01-10', limit=1000)
 
 def getNOAAData(m, y, s):
+    st = ['USW00013722','US1OKOK0087','US1OKOK0106','US1OKOK0098','US1OKOK0075','US1OKOK0056','US1OKOK0071','US1OKOK0069','US1OKOK0107','US1OKOK0060','US1OKOK0029','US1OKOK0070','US1OKOK0105','US1OKOK0111','US1OKOK0109','US1OKOK0077']
     mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
     day = {'JAN':'01-31','FEB':'01-28','MAR':'01-31','APR':'01-30','MAY':'01-31','JUN':'01-30','JUL':'01-31','AUG':'01-31','SEP':'01-30','OCT':'01-31','NOV':'01-30','DEC':'01-31'}
-    sta = {'DETROIT METRO AP MI':'USW00094847','PENDLETON AIRPORT':'USW00024155','LAS VEGAS INTL AIRPORT NV':'USW00023169'}                                         
+    sta = {'TEST':st[0],'OK CITY W ROGERS APT':'USW00013967','PENDLETON AIRPORT':'USW00024155','RALEIGH AIRPORT NC':'USW00013722'}                                         
     noaa = NOAAData()
     noaa.stationData('GHCND', (f'GHCND:{sta[s]}'), (f'{y}-{mon[m]}-{day[m][0:2]}') , (f'{y}-{mon[m]}-{day[m][3:5]}'), 1000)
     return noaa
 
 def getPlot(noaa, station, year, month):
-    
-    noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][0:10]), axis=1)
+    noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][8:10]), axis=1)
     noaa.df = noaa.df.drop(['station','attributes','date'], axis=1)
     # average daily wind given in meters/sec
-    AWND = noaa.filterDF('AWND')
-    AWND['AWND'] = AWND.apply(lambda d: (d['value'] * .223694), axis=1)
-    AWND = AWND.drop(['value','datatype'], axis=1)
+    try:
+        AWND = noaa.filterDF('AWND')
+        AWND['AWND'] = AWND.apply(lambda d: (d['value'] * .223694), axis=1)
+        AWND = AWND.drop(['value','datatype'], axis=1)
+    except:
+        AWND = pd.DataFrame(columns = ['dayYear', 'AWND'])
     # 5 second wind gust given in meters/sec
-    WSF5 = noaa.filterDF('WSF5')
-    WSF5['WSF5'] = WSF5.apply(lambda d: (d['value'] * .223694), axis=1)
-    WSF5 = WSF5.drop(['value','datatype'], axis=1)
+    try:
+        WSF5 = noaa.filterDF('WSF5')
+        WSF5['WSF5'] = WSF5.apply(lambda d: (d['value'] * .223694), axis=1)
+        WSF5 = WSF5.drop(['value','datatype'], axis=1)
+    except:
+        WSF5 = pd.DataFrame(columns = ['dayYear', 'WSF5'])
     # 2 minute sustained wind given in meters/sec
-    WSF2 = noaa.filterDF('WSF2')
-    WSF2['WSF2'] = WSF2.apply(lambda d: (d['value'] * .223694), axis=1)
-    WSF2 = WSF2.drop(['value','datatype'], axis=1)
+    try:   
+        WSF2 = noaa.filterDF('WSF2')
+        WSF2['WSF2'] = WSF2.apply(lambda d: (d['value'] * .223694), axis=1)
+        WSF2 = WSF2.drop(['value','datatype'], axis=1)
+    except:
+        WSF2 = pd.DataFrame(columns = ['dayYear', 'WSF2'])
     # precipitation given in tenths of a millimeter
-    PRCP = noaa.filterDF('PRCP')
-    PRCP['PRCP'] = PRCP.apply(lambda d: (d['value'] * 0.1), axis=1)
-    PRCP = PRCP.drop(['value','datatype'], axis=1)
-    # snow given in actual illimeters
-    SNOW = noaa.filterDF('SNOW')
-    SNOW['SNOW'] = SNOW.apply(lambda d: (d['value']), axis=1)
-    SNOW = SNOW.drop(['value','datatype'], axis=1)
+    try:
+        PRCP = noaa.filterDF('PRCP')
+        PRCP['PRCP'] = PRCP.apply(lambda d: (d['value'] * 0.1), axis=1)
+        PRCP = PRCP.drop(['value','datatype'], axis=1)
+    except:
+        PRCP = pd.DataFrame(columns = ['dayYear', 'PRCP'])
+    # snow given in actual millimeters
+    try:
+        SNOW = noaa.filterDF('SNOW')
+        SNOW['SNOW'] = SNOW.apply(lambda d: (d['value']) * 0.1, axis=1)
+        SNOW = SNOW.drop(['value','datatype'], axis=1)
+    except:
+        SNOW = pd.DataFrame(columns = ['dayYear', 'SNOW'])
     # All temps given in Celsius tenths of a degree
-    TAVG = noaa.filterDF('TAVG')
-    TAVG['TAVG'] = TAVG.apply(lambda d: (d['value'] * .18) + 32, axis=1)
-    TAVG = TAVG.drop(['value','datatype'], axis=1)
-    TMAX = noaa.filterDF('TMAX')
-    TMAX['TMAX'] = TMAX.apply(lambda d: (d['value'] * .18) + 32, axis=1)
-    TMAX = TMAX.drop(['value','datatype'], axis=1)
-    TMIN = noaa.filterDF('TMIN')
-    TMIN['TMIN'] = TMIN.apply(lambda d: (d['value'] * .18) + 32, axis=1)
-    TMIN = TMIN.drop(['value','datatype'], axis=1)
-    
+    try:    
+        TAVG = noaa.filterDF('TAVG')
+        TAVG['TAVG'] = TAVG.apply(lambda d: (d['value'] * .18) + 32, axis=1)
+        TAVG = TAVG.drop(['value','datatype'], axis=1)
+    except:
+        TAVG = pd.DataFrame(columns = ['dayYear', 'TAVG'])
+    try:
+        TMAX = noaa.filterDF('TMAX')
+        TMAX['TMAX'] = TMAX.apply(lambda d: (d['value'] * .18) + 32, axis=1)
+        TMAX = TMAX.drop(['value','datatype'], axis=1)
+    except:
+        TMAX = pd.DataFrame(columns = ['dayYear', 'TMAX'])
+    try:
+        TMIN = noaa.filterDF('TMIN')
+        TMIN['TMIN'] = TMIN.apply(lambda d: (d['value'] * .18) + 32, axis=1)
+        TMIN = TMIN.drop(['value','datatype'], axis=1)
+    except:
+        TMIN= pd.DataFrame(columns = ['dayYear', 'TMIN'])
     # merge all dataframes into one dataframe to rule them all!
     dfs= [AWND, WSF5, WSF2, TAVG, TMAX, TMIN, SNOW, PRCP]
-    dfM = reduce(lambda  left,right: pd.merge(left,right,on=['dayYear']), dfs)
+    dfM = reduce(lambda left,right: pd.merge(left,right,on=['dayYear']), dfs)
     weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2, station, year,month, dfM)
     #st.pyplot(fig)   
 
 def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, dfM):    
-    st.write(f'<h2 style="text-align:center">{station} DAILY WEATHER</h2>', unsafe_allow_html=True)
+    st.write(f'<h2 style="text-align:center">{station}</h2>', unsafe_allow_html=True)
     #st.write('<h1 style="text-align: center"> your-text-here </h1>', unsafe_allow_html=True)
     fig, ax = plt.subplots(figsize=(10,4))
     N = len(dfM.index)
@@ -120,18 +143,19 @@ def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, d
     width = 0.4
     bar1 = ax.bar(ind+width, dfM['WSF5'], width, color='orange', edgecolor='#c26e00', linewidth=1, alpha=0.7)
     bar2 = ax.bar(ind, dfM['WSF2'], width, color = '#ffe600', edgecolor='#b5a300', linewidth=1, alpha=0.7)
-    line1 = ax.plot(ind+width, dfM['AWND'], color = '#e65525', linewidth=3.0, alpha=0.8)
-    plt.ylabel('mph')
-    plt.xticks(ind+width,dfM['dayYear'])
+    line1 = ax.plot(ind+width, dfM['AWND'], color = '#e65525', linewidth=2.0, alpha=0.8)
+    plt.ylabel('mph', fontsize=12)
+    plt.xticks(ind+width/2,dfM['dayYear'])
     legend_elements = [Patch(facecolor='orange', edgecolor='#c26e00', label='Max Wind Gust'),
         Patch(facecolor='#ffe600', edgecolor='#b5a300', label='Sustained Wind'),
-        Line2D([0], [0], color='#e65525', lw=4, label='Avg Daily Wind')]
-    plt.legend(handles=legend_elements, shadow=True, fancybox=True, loc='upper right', borderpad=1)
+        Line2D([0], [0], color='#e65525', lw=3, label='Avg Daily Wind')]
+    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
     plt.xticks(rotation = 90, fontsize=8) 
     plt.title((f'{station} - DAILY WIND DATA - {month} {year}'), fontsize=20, color='black', pad=30, )
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
     plt.gca().spines['bottom'].set_visible(False)
+    ax.set_ylim([0, 80])
     st.pyplot(fig)
     st.write('')
 
@@ -141,18 +165,19 @@ def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, d
     width = 0.4
     bar1 = ax.bar(ind+width, dfM['TMAX'], width, color='#ff0000', edgecolor='#910000', linewidth=1, alpha=0.6)
     bar2 = ax.bar(ind, dfM['TMIN'], width, color = '#0019fc', edgecolor='#00095e', linewidth=1, alpha=0.5)
-    line1 = ax.plot(ind+width, dfM['TAVG'], color = '#ae00ff', linewidth=3.0, alpha=0.7)
-    plt.ylabel('F')
-    plt.xticks(ind+width,dfM['dayYear'])
+    line1 = ax.plot(ind+width, dfM['TAVG'], color = '#ae00ff', linewidth=2.0, alpha=0.7)
+    plt.ylabel('F',fontsize=12)
+    plt.xticks(ind+width/2,dfM['dayYear'])
     legend_elements = [Patch(facecolor='#ff0000', edgecolor='#910000', label='Max Temperature'),
         Patch(facecolor='#0019fc', edgecolor='#00095e', label='Min Temperature'),
-        Line2D([0], [0], color='#ae00ff', lw=4, label='Avg Daily Temp')]
-    plt.legend(handles=legend_elements, shadow=True, fancybox=True, loc='upper right', borderpad=1)
+        Line2D([0], [0], color='#ae00ff', lw=3, label='Avg Daily Temp')]
+    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
     plt.xticks(rotation = 90, fontsize=8) 
     plt.title((f'{station} - DAILY TEMP DATA - {month} {year}'), fontsize=20, color='black',pad=30)
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
     plt.gca().spines['bottom'].set_visible(False)
+    ax.set_ylim([0, 120])
     st.pyplot(fig)
     st.write('')
 
@@ -160,22 +185,37 @@ def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, d
     N = len(dfM.index)
     ind = np.arange(N) 
     width = 0.4
-    bar1 = ax.bar(ind+width, dfM['PRCP'], width, color='green', edgecolor='#084700', linewidth=1, alpha=0.7)
-    bar2 = ax.bar(ind, dfM['SNOW'], width, color = 'grey', edgecolor='#404040', linewidth=1, alpha=0.6)
+    bar1 = ax.bar(ind, dfM['PRCP'], width, color='green', edgecolor='#084700', linewidth=1, alpha=0.7)
+    #bar2 = ax.bar(ind, dfM['SNOW'], width, color = 'grey', edgecolor='#404040', linewidth=1, alpha=0.6)
     #line1 = ax.plot(ind+width, dfM['TAVG'], color = '#e65525', linewidth=4.0)
-    plt.ylabel('mm')
-    plt.xticks(ind+width,dfM['dayYear'])
+    
+    plt.ylabel('precip mm',color="green",fontsize=12)
+    plt.xticks(ind+width/2,dfM['dayYear'])
+    #ax2.xticks(ind+width,dfM['dayYear'])
     legend_elements = [Patch(facecolor='green', edgecolor='#084700', label='Precipitation'),
         Patch(facecolor='grey', edgecolor='#292929', label='Snow')]
-    plt.legend(handles=legend_elements, shadow=True, fancybox=True, loc='upper right', borderpad=1)
-    plt.xticks(rotation = 90, fontsize=8) 
+    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
+    plt.xticks(rotation = 90, fontsize=8)
+    #ax2.xticks(rotation = 90, fontsize=8) 
     plt.title((f'{station} - DAILY PRECIP DATA - {month} {year}'), fontsize=20, color='black', pad=30)
-    plt.gca().spines['top'].set_visible(False)
-    plt.gca().spines['right'].set_visible(False)
-    plt.gca().spines['bottom'].set_visible(False)
+    
+    ax.set_ylim([0, 50])
+
+    ax2 = ax.twinx()
+    # make a plot with different y-axis using second axis object
+    ax2.bar(ind+width, dfM['SNOW'], width, color = 'grey', edgecolor='#404040', linewidth=1, alpha=0.6)
+    ax2.set_ylabel("snow cm",color="grey",fontsize=12)
+    ax2.set_ylim([0, 50])
+    ax2.spines['bottom'].set_visible(False)
+    ax2.spines['top'].set_visible(False)
+    #ax2.set_axis_off()
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    #ax.set_axis_off()
     st.pyplot(fig)
     st.markdown('---')
-    st.write(f'<p style="text-align:center">WEATHER DATA TABLE</p>', unsafe_allow_html=True)
+    #st.write(f'<p style="text-align:center">WEATHER DATA TABLE</p>', unsafe_allow_html=True)
+    st.write(f'<p style="text-align:center">WEATHER DATA TABLE - {station} - {month} {year}</p>', unsafe_allow_html=True)
     st.write(dfM)
     
 
@@ -185,7 +225,7 @@ st.write(f'<p style="text-align:center">Data: NOAA Global Historical Climate Net
 
 station = st.sidebar.selectbox(
      'SELECT STATION',
-     ('PENDLETON AIRPORT','DETROIT METRO AP MI','LAS VEGAS INTL AIRPORT NV'))     
+     ('PENDLETON AIRPORT','OK CITY W ROGERS APT','RALEIGH AIRPORT NC'))     
 year = st.sidebar.selectbox(
      'SELECT YEAR',
      ('2021','2020','2019','2018','2017','2016','2015','2014'))

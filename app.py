@@ -11,6 +11,7 @@ import altair as alt
 from functools import reduce
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
+import matplotlib.font_manager
 pd.options.mode.chained_assignment = None  # default='warn'
 
 class NOAAData(object):
@@ -136,19 +137,23 @@ def getPlot(noaa, station, year, month):
 
 def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, dfM):    
     st.write(f'<h2 style="text-align:center">{station}</h2>', unsafe_allow_html=True)
-    #st.write('<h1 style="text-align: center"> your-text-here </h1>', unsafe_allow_html=True)
-    fig, ax = plt.subplots(figsize=(10,4))
+    # column layout for side by side charts
+    col1, col2 = st.columns([1,1])
+
+    # plot for daily wind speed
+    fig, ax = plt.subplots(figsize=(12,6))
     N = len(dfM.index)
     ind = np.arange(N) 
     width = 0.4
-    bar1 = ax.bar(ind+width, dfM['WSF5'], width, color='orange', edgecolor='#c26e00', linewidth=1, alpha=0.7)
-    bar2 = ax.bar(ind, dfM['WSF2'], width, color = '#ffe600', edgecolor='#b5a300', linewidth=1, alpha=0.7)
-    line1 = ax.plot(ind+width, dfM['AWND'], color = '#e65525', linewidth=2.0, alpha=0.8)
+    WSF5c,WSF5e,WSF2c,WSF2e,AWNDc = '#1bab6b','#00542f','#72ab92','#00703f','#00ff8f'
+    bar1 = ax.bar(ind+width, dfM['WSF5'], width, color=WSF5c, edgecolor=WSF5e, linewidth=1, alpha=0.8)
+    bar2 = ax.bar(ind, dfM['WSF2'], width, color = WSF2c, edgecolor=WSF2e, linewidth=1, alpha=0.8)
+    line1 = ax.plot(ind+width, dfM['AWND'], color = AWNDc, linewidth=3.0, alpha=0.8)
     plt.ylabel('mph', fontsize=12)
     plt.xticks(ind+width/2,dfM['dayYear'])
-    legend_elements = [Patch(facecolor='orange', edgecolor='#c26e00', label='Max Wind Gust'),
-        Patch(facecolor='#ffe600', edgecolor='#b5a300', label='Sustained Wind'),
-        Line2D([0], [0], color='#e65525', lw=3, label='Avg Daily Wind')]
+    legend_elements = [Patch(facecolor=WSF5c, edgecolor=WSF5e, label='Max Wind Gust'),
+        Patch(facecolor=WSF2c, edgecolor=WSF2e, label='Sustained Wind'),
+        Line2D([0], [0], color=AWNDc, lw=3, label='Avg Daily Wind')]
     plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
     plt.xticks(rotation = 90, fontsize=8) 
     plt.title((f'{station} - DAILY WIND DATA - {month} {year}'), fontsize=20, color='black', pad=30, )
@@ -156,10 +161,11 @@ def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, d
     plt.gca().spines['right'].set_visible(False)
     plt.gca().spines['bottom'].set_visible(False)
     ax.set_ylim([0, 80])
-    st.pyplot(fig)
-    st.write('')
+    with col1:
+        st.pyplot(fig)
 
-    fig, ax = plt.subplots(figsize=(10,4))
+    # plot for daily temperature
+    fig, ax = plt.subplots(figsize=(12,6))
     N = len(dfM.index)
     ind = np.arange(N) 
     width = 0.4
@@ -177,34 +183,29 @@ def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, d
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
     plt.gca().spines['bottom'].set_visible(False)
-    ax.set_ylim([0, 120])
-    st.pyplot(fig)
-    st.write('')
-
-    fig, ax = plt.subplots(figsize=(10,4))
+    ax.set_ylim([-10, 120])
+    with col2:
+        st.pyplot(fig)
+    
+    # plot for daily precipitation
+    fig, ax = plt.subplots(figsize=(12,6))
     N = len(dfM.index)
     ind = np.arange(N) 
     width = 0.4
-    bar1 = ax.bar(ind, dfM['PRCP'], width, color='green', edgecolor='#084700', linewidth=1, alpha=0.7)
-    #bar2 = ax.bar(ind, dfM['SNOW'], width, color = 'grey', edgecolor='#404040', linewidth=1, alpha=0.6)
-    #line1 = ax.plot(ind+width, dfM['TAVG'], color = '#e65525', linewidth=4.0)
-    
-    plt.ylabel('precip mm',color="green",fontsize=12)
+    Pc, Pe, Sc, Se = '#006be6','#001a38','#5d6875','#22262b'
+    bar1 = ax.bar(ind, dfM['PRCP'], width, color=Pc, edgecolor=Pe, linewidth=1, alpha=0.8)
+    plt.ylabel('precip mm',fontsize=12)
     plt.xticks(ind+width/2,dfM['dayYear'])
-    #ax2.xticks(ind+width,dfM['dayYear'])
-    legend_elements = [Patch(facecolor='green', edgecolor='#084700', label='Precipitation'),
-        Patch(facecolor='grey', edgecolor='#292929', label='Snow')]
+    legend_elements = [Patch(facecolor=Pc, edgecolor=Pe, label='Precipitation', alpha=0.8),
+        Patch(facecolor=Sc, edgecolor=Se, label='Snow',alpha=0.7)]
     plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
-    plt.xticks(rotation = 90, fontsize=8)
-    #ax2.xticks(rotation = 90, fontsize=8) 
+    plt.xticks(rotation = 90, fontsize=8) 
     plt.title((f'{station} - DAILY PRECIP DATA - {month} {year}'), fontsize=20, color='black', pad=30)
-    
     ax.set_ylim([0, 50])
-
-    ax2 = ax.twinx()
     # make a plot with different y-axis using second axis object
-    ax2.bar(ind+width, dfM['SNOW'], width, color = 'grey', edgecolor='#404040', linewidth=1, alpha=0.6)
-    ax2.set_ylabel("snow cm",color="grey",fontsize=12)
+    ax2 = ax.twinx() 
+    ax2.bar(ind+width, dfM['SNOW'], width, color = Sc, edgecolor=Se, linewidth=1, alpha=0.7)
+    ax2.set_ylabel("snow cm",fontsize=12)
     ax2.set_ylim([0, 50])
     ax2.spines['bottom'].set_visible(False)
     ax2.spines['top'].set_visible(False)
@@ -212,14 +213,23 @@ def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, d
     ax.spines['bottom'].set_visible(False)
     ax.spines['top'].set_visible(False)
     #ax.set_axis_off()
-    st.pyplot(fig)
+    #cl1,cl2, cl3 = st.columns([1,2.5,1])
+    #st.pyplot(fig)
+    #with cl2:
+    #    st.pyplot(fig)
+    # side by side layout for plot and table
+    cl1, cl2 = st.columns([1.1,1])
+    with cl1:
+        st.pyplot(fig)
+    with cl2:
+        st.write(f'<p style="text-align:center;font-family:sans-serif;font-weight:bold">WEATHER DATA TABLE - {station} - {month} {year}</p>', unsafe_allow_html=True)
+        st.write(dfM)
+        
     st.markdown('---')
-    #st.write(f'<p style="text-align:center">WEATHER DATA TABLE</p>', unsafe_allow_html=True)
-    st.write(f'<p style="text-align:center">WEATHER DATA TABLE - {station} - {month} {year}</p>', unsafe_allow_html=True)
-    st.write(dfM)
     
-
 ### MAIN APP SECTION
+st.set_page_config(layout="wide")
+st.markdown(""" <style>#MainMenu {visibility: hidden;}footer {visibility: hidden;}</style> """, unsafe_allow_html=True)
 st.write(f'<h1 style="text-align:center">HISTORIC WEATHER SUITABILITY</h2>', unsafe_allow_html=True)
 st.write(f'<p style="text-align:center">Data: NOAA Global Historical Climate Network (GHCN) - Daily land surface observations</p>', unsafe_allow_html=True)
 
@@ -234,7 +244,5 @@ month = st.sidebar.select_slider(
      options=['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL','AUG','SEP','OCT','NOV','DEC'])
 
 noaa = getNOAAData(month, year, station)
-#st.write(noaa.df)
 getPlot(noaa, station, year, month)
-
 st.markdown('---')

@@ -244,7 +244,7 @@ month = st.sidebar.select_slider(
 
 noaa = getNOAAData(month, year, station)
 getPlot(noaa, station, year, month)
-st.write(f'<h1 style="text-align:center">HISTORIC WEATHER SUITABILITY</h2>', unsafe_allow_html=True)
+#st.write(f'<h1 style="text-align:center">HISTORIC WEATHER SUITABILITY</h2>', unsafe_allow_html=True)
 st.write(f'<p style="text-align:center">Data: NOAA Global Historical Climate Network (GHCN) - Daily land surface observations</p>', unsafe_allow_html=True)
 
 st.markdown('---')

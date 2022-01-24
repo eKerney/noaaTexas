@@ -137,7 +137,7 @@ def getPlot(noaa, station, year, month):
     #st.pyplot(fig)   
 
 def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, dfM):    
-    st.write(f'<h2 style="text-align:center">{station}</h2>', unsafe_allow_html=True)
+    st.write(f'<h1 style="text-align:center">{station}</h1>', unsafe_allow_html=True)
     # column layout for side by side charts
     col1, col2 = st.columns([1,1])
     txtC = '#575757'
@@ -224,15 +224,13 @@ def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, d
     with cl1:
         st.pyplot(fig)
     with cl2:
-        st.write(f'<p style="text-align:center;font-family:sans-serif;font-weight:bold">WEATHER DATA - {station} - {month} {year}</p>', unsafe_allow_html=True)
+        st.write(f'<p style="text-align:center;font-family:sans-serif">WEATHER DATA - {station} - {month} {year}</p>', unsafe_allow_html=True)
         st.write(dfM)
         
     
 ### MAIN APP SECTION
 st.set_page_config(layout="wide")
 st.markdown(""" <style>#MainMenu {visibility: hidden;}footer {visibility: hidden;}</style> """, unsafe_allow_html=True)
-st.write(f'<h1 style="text-align:center">HISTORIC WEATHER SUITABILITY</h2>', unsafe_allow_html=True)
-st.write(f'<p style="text-align:center">Data: NOAA Global Historical Climate Network (GHCN) - Daily land surface observations</p>', unsafe_allow_html=True)
 
 station = st.sidebar.selectbox(
      'SELECT STATION',
@@ -246,4 +244,7 @@ month = st.sidebar.select_slider(
 
 noaa = getNOAAData(month, year, station)
 getPlot(noaa, station, year, month)
+st.write(f'<h1 style="text-align:center">HISTORIC WEATHER SUITABILITY</h2>', unsafe_allow_html=True)
+st.write(f'<p style="text-align:center">Data: NOAA Global Historical Climate Network (GHCN) - Daily land surface observations</p>', unsafe_allow_html=True)
+
 st.markdown('---')

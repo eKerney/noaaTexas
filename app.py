@@ -152,7 +152,7 @@ def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, d
     line1 = ax.plot(ind+width, dfM['AWND'], color = AWNDc, linewidth=3.0, alpha=0.7)
     plt.ylabel('mph', fontsize=12)
     plt.xticks(ind+width/2,dfM['dayYear'])
-    legend_elements = [Patch(facecolor=WSF5c, edgecolor=WSF5e, label='Max Wind Gust', color='blue'),
+    legend_elements = [Patch(facecolor=WSF5c, edgecolor=WSF5e, label='Max Wind Gust'),
         Patch(facecolor=WSF2c, edgecolor=WSF2e, label='Sustained Wind'),
         Line2D([0], [0], color=AWNDc, lw=3, label='Avg Daily Wind')]
     plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
@@ -176,9 +176,9 @@ def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, d
     line1 = ax.plot(ind+width, dfM['TAVG'], color = lc, linewidth=3.0, alpha=0.5)
     plt.ylabel('F',fontsize=12)
     plt.xticks(ind+width/2,dfM['dayYear'])
-    legend_elements = [Patch(facecolor='#ff0000', edgecolor='#910000', label='Max Temperature'),
-        Patch(facecolor='#0019fc', edgecolor='#00095e', label='Min Temperature'),
-        Line2D([0], [0], color='#ae00ff', lw=3, label='Avg Daily Temp')]
+    legend_elements = [Patch(facecolor=mac, edgecolor=mae, label='Max Temperature'),
+        Patch(facecolor=mic, edgecolor=mae, label='Min Temperature'),
+        Line2D([0], [0], color=lc, lw=3, label='Avg Daily Temp')]
     plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
     plt.xticks(rotation = 90, fontsize=8) 
     plt.title((f'{station} - DAILY TEMP DATA - {month} {year}'), fontsize=20, color='#575757',pad=30)
@@ -230,7 +230,7 @@ def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, d
     
 ### MAIN APP SECTION
 st.set_page_config(layout="wide")
-#st.markdown(""" <style>#MainMenu {visibility: hidden;}footer {visibility: hidden;}</style> """, unsafe_allow_html=True)
+st.markdown(""" <style>#MainMenu {visibility: hidden;}footer {visibility: hidden;}</style> """, unsafe_allow_html=True)
 st.write(f'<h1 style="text-align:center">HISTORIC WEATHER SUITABILITY</h2>', unsafe_allow_html=True)
 st.write(f'<p style="text-align:center">Data: NOAA Global Historical Climate Network (GHCN) - Daily land surface observations</p>', unsafe_allow_html=True)
 

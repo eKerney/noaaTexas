@@ -136,8 +136,8 @@ def getPlot(noaa, station, year, month):
     weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2, station, year,month, dfM)
     #st.pyplot(fig)   
 
-def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, dfM):    
-    st.write(f'<h1 style="text-align:center">{station}</h1>', unsafe_allow_html=True)
+def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, dfM):
+    st.write(f'<h1 style="text-align:center;margin-top:-100px;">{station}</h1>', unsafe_allow_html=True)
     # column layout for side by side charts
     col1, col2 = st.columns([1,1])
     txtC = '#575757'
@@ -231,6 +231,7 @@ def weatherPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, d
 ### MAIN APP SECTION
 st.set_page_config(layout="wide")
 st.markdown(""" <style>#MainMenu {visibility: hidden;}footer {visibility: hidden;}</style> """, unsafe_allow_html=True)
+
 
 station = st.sidebar.selectbox(
      'SELECT STATION',

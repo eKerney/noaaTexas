@@ -92,7 +92,7 @@ def getDailyData(m,y,s,d):
     st.write('NORMAL_HLY', (f'GHCND:{sta[s]}'), (f'2010-{mon[m]}-{d}'), '2010-01-02', 1000, 'metric')
     noaa = NOAAData()
     # stan = noaa.stationData('NORMAL_HLY', 'GHCND:USW00024155', '2010-01-01', '2010-01-02', 1000, 'standard')
-    noaa.stationDataUnits('NORMAL_HLY', (f'GHCND:{sta[s]}'), (f'2010-{mon[m]}-{d}'), (f'2010-01-{d2}'), 1000, 'metric')
+    noaa.stationDataUnits('NORMAL_HLY', (f'GHCND:{sta[s]}'), (f'2010-{mon[m]}-{d}'), (f'2010-{mon[m]}-{d2}'), 1000, 'standard')
     #st.write(noaa.df)
     return noaa
 
@@ -116,14 +116,119 @@ def getDailyPlot(noaa, station, year, month, day):
     
     ### Primary function flow
     # format NOAA.df date attribute for hour and drop extraneous columns        
-    noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][11:16]), axis=1)
+    noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][8:16]), axis=1)
     noaa.df = noaa.df.drop(['station','attributes','date'], axis=1)
     st.write(noaa.df)
     # iterate through list of parameters and conversion expressions
-    paramList = [{'p':'HLY-TEMP-NORMAL', 'e':'+100'},{'p':'HLY-CLOD-PCTOVC','e':''},{'p':'HLY-PRES-NORMAL','e':''},
+    paramList = [{'p':'HLY-TEMP-NORMAL', 'e':''},{'p':'HLY-CLOD-PCTOVC','e':'*.10'},{'p':'HLY-PRES-NORMAL','e':''},
         {'p':'HLY-DEWP-NORMAL','e':''},{'p':'HLY-WIND-AVGSPD','e':''},{'p':'HLY-WIND-1STDIR','e':''}]
     dfClean = getMergedDF(noaa.df, paramList)
     st.write(dfClean)
+    dailyWeatherPlots(dfClean, station,year,month)
+
+def dailyWeatherPlots(df, station, year, month):
+    # st.write(f'<h1 style="text-align:center;margin-top:-100px;">{station}</h1>', unsafe_allow_html=True)
+    # column layout for side by side charts
+    col1, col2 = st.columns([1,1])
+    txtC = '#575757'
+    # plot for daily wind speed
+    fig, ax = plt.subplots(figsize=(12,6))
+    N = len(df.index)
+    ind = np.arange(N) 
+    width = 0.4
+    WSF5c,WSF5e,WSF2c,WSF2e,AWNDc = '#1bab6b','#00542f','#72ab92','#00703f','#00ff8f'
+    bar1 = ax.bar(ind+width, df['HLY-WIND-AVGSPD'], width, color=WSF5c, edgecolor=WSF5e, linewidth=1, alpha=0.8)
+    #bar2 = ax.bar(ind, dfM['WSF2'], width, color = WSF2c, edgecolor=WSF2e, linewidth=1, alpha=0.6)
+    #line1 = ax.plot(ind+width, dfM['AWND'], color = AWNDc, linewidth=3.0, alpha=0.7)
+    plt.ylabel('mph', fontsize=12)
+    plt.xticks(ind+width/2,df['dayYear'])
+    legend_elements = [Patch(facecolor=WSF5c, edgecolor=WSF5e, label='Max Wind Gust'),
+        Patch(facecolor=WSF2c, edgecolor=WSF2e, label='Sustained Wind'),
+        Line2D([0], [0], color=AWNDc, lw=3, label='Avg Daily Wind')]
+    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
+    plt.xticks(rotation = 90, fontsize=8) 
+    plt.title((f'{station} - HLY-WIND-AVGSPD - {month} {year}'), fontsize=20, color=txtC, pad=30, )
+    plt.gca().spines['top'].set_visible(False)
+    plt.gca().spines['right'].set_visible(False)
+    plt.gca().spines['bottom'].set_visible(False)
+    #ax.set_ylim([0, 80])
+    with col1:
+        #st.write(f'<h1 style="text-align:center;margin-top:-100px;">{station}</h1>', unsafe_allow_html=True)
+        st.pyplot(fig)
+
+    # plot for daily wind speed
+    fig, ax = plt.subplots(figsize=(12,6))
+    N = len(df.index)
+    ind = np.arange(N) 
+    width = 0.4
+    WSF5c,WSF5e,WSF2c,WSF2e,AWNDc = '#1bab6b','#00542f','#72ab92','#00703f','#00ff8f'
+    #bar1 = ax.bar(ind+width, df['HLY-WIND-1STDIR'], width, color=WSF5c, edgecolor=WSF5e, linewidth=1, alpha=0.8)
+    #bar2 = ax.bar(ind, dfM['WSF2'], width, color = WSF2c, edgecolor=WSF2e, linewidth=1, alpha=0.6)
+    line1 = ax.plot(ind+width, df['HLY-WIND-1STDIR'], color = AWNDc, linewidth=3.0, alpha=0.7)
+    plt.ylabel('1=N, 2=NE, 3=E, 4=SE, 5=S, 6=SW, 7=W, 8=NW', fontsize=10)
+    plt.xticks(ind+width/2,df['dayYear'])
+    legend_elements = [Patch(facecolor=WSF5c, edgecolor=WSF5e, label='Max Wind Gust'),
+        Patch(facecolor=WSF2c, edgecolor=WSF2e, label='Sustained Wind'),
+        Line2D([0], [0], color=AWNDc, lw=3, label='Avg Daily Wind')]
+    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
+    plt.xticks(rotation = 90, fontsize=8) 
+    plt.title((f'{station} -HLY-WIND-1STDIR - {month} {year}'), fontsize=20, color=txtC, pad=30, )
+    plt.gca().spines['top'].set_visible(False)
+    plt.gca().spines['right'].set_visible(False)
+    plt.gca().spines['bottom'].set_visible(False)
+    #ax.set_ylim([0, 80])
+    with col2:
+        st.pyplot(fig)
+
+    # plot for daily wind speed
+    fig, ax = plt.subplots(figsize=(12,6))
+    N = len(df.index)
+    ind = np.arange(N) 
+    width = 0.4
+    WSF5c,WSF5e,WSF2c,WSF2e,AWNDc = '#1bab6b','#00542f','#72ab92','#00703f','#00ff8f'
+    bar1 = ax.bar(ind+width, df['HLY-CLOD-PCTOVC'], width, color='#188bad', edgecolor=WSF5e, linewidth=1, alpha=0.8)
+    #bar2 = ax.bar(ind, dfM['WSF2'], width, color = WSF2c, edgecolor=WSF2e, linewidth=1, alpha=0.6)
+    #line1 = ax.plot(ind+width, df['HLY-CLOD-PCTOVC'], color = AWNDc, linewidth=3.0, alpha=0.7)
+    plt.ylabel('%', fontsize=12)
+    plt.xticks(ind+width/2,df['dayYear'])
+    legend_elements = [Patch(facecolor=WSF5c, edgecolor=WSF5e, label='Max Wind Gust'),
+        Patch(facecolor=WSF2c, edgecolor=WSF2e, label='Sustained Wind'),
+        Line2D([0], [0], color=AWNDc, lw=3, label='Avg Daily Wind')]
+    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
+    plt.xticks(rotation = 90, fontsize=8) 
+    plt.title((f'{station} - HLY-CLOD-PCTOVC - {month} {year}'), fontsize=20, color=txtC, pad=30, )
+    plt.gca().spines['top'].set_visible(False)
+    plt.gca().spines['right'].set_visible(False)
+    plt.gca().spines['bottom'].set_visible(False)
+    #ax.set_ylim([0, 80])
+    cl1, cl2 = st.columns([1,1])
+    with cl1:
+        st.pyplot(fig)
+
+    # plot for daily wind speed
+    fig, ax = plt.subplots(figsize=(12,6))
+    N = len(df.index)
+    ind = np.arange(N) 
+    width = 0.4
+    WSF5c,WSF5e,WSF2c,WSF2e,AWNDc = '#1bab6b','#00542f','#72ab92','#00703f','#00ff8f'
+    bar1 = ax.bar(ind+width, df['HLY-TEMP-NORMAL'], width, color='#188bad', edgecolor=WSF5e, linewidth=1, alpha=0.8)
+    #bar2 = ax.bar(ind, dfM['WSF2'], width, color = WSF2c, edgecolor=WSF2e, linewidth=1, alpha=0.6)
+    #line1 = ax.plot(ind+width, df['HLY-CLOD-PCTOVC'], color = AWNDc, linewidth=3.0, alpha=0.7)
+    plt.ylabel('F', fontsize=12)
+    plt.xticks(ind+width/2,df['dayYear'])
+    legend_elements = [Patch(facecolor=WSF5c, edgecolor=WSF5e, label='Max Wind Gust'),
+        Patch(facecolor=WSF2c, edgecolor=WSF2e, label='Sustained Wind'),
+        Line2D([0], [0], color=AWNDc, lw=3, label='Avg Daily Wind')]
+    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
+    plt.xticks(rotation = 90, fontsize=8) 
+    plt.title((f'{station} - HLY-TEMP-NORMAL - {month} {year}'), fontsize=20, color=txtC, pad=30, )
+    plt.gca().spines['top'].set_visible(False)
+    plt.gca().spines['right'].set_visible(False)
+    plt.gca().spines['bottom'].set_visible(False)
+    #ax.set_ylim([0, 80])
+    #cl1, cl2 = st.columns([1,1])
+    with cl2:
+        st.pyplot(fig)
 
 def getPlot(noaa, station, year, month):
     noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][8:10]), axis=1)

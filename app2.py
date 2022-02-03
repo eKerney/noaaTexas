@@ -119,8 +119,8 @@ def getDailyPlot(noaa, station, year, month, day):
     # iterate through list of parameters and conversion expressions
     paramList = [{'p':'HLY-TEMP-NORMAL', 'e':''}, {'p':'HLY-HIDX-NORMAL', 'e':''}, {'p':'HLY-DEWP-NORMAL','e':''},
         {'p':'HLY-CLOD-PCTOVC','e':'*.10'}, {'p':'HLY-CLOD-PCTCLR','e':'*.10'}, {'p':'HLY-PRES-NORMAL','e':''},
-        {'p':'HLY-WIND-AVGSPD','e':''}, {'p':'HLY-WIND-1STDIR','e':''}, {'p':'HLY-WIND-PCTCLM','e':'*.10'}, {'p':'HLY-WIND-VCTDIR','e':'*.10'}]
-        #{'p':'HLY-WIND-VCTDIR','e':'*.10'}]
+        {'p':'HLY-WIND-AVGSPD','e':''}, {'p':'HLY-WIND-1STDIR','e':''}, {'p':'HLY-WIND-PCTCLM','e':'*.10'}, {'p':'HLY-WIND-VCTDIR','e':'*.10'},
+        {'p':'HLY-TEMP-10PCTL','e':''},{'p':'HLY-TEMP-90PCTL','e':''}]
     dfClean = getMergedDF(noaa.df, paramList)
     #st.write(dfClean)
     dailyWeatherPlots(dfClean, station,year,month)
@@ -195,21 +195,28 @@ def dailyWeatherPlots(df, station, year, month):
     ind = np.arange(N) 
     width = 0.4
     mic, mie, mac, mae, lc = '#188bad','#0c303b','#fc6603','#662900','#4903fc' 
-    bar1 = ax.bar(ind+width, df['HLY-TEMP-NORMAL'], width, color=mac, edgecolor=mae, linewidth=1, alpha=0.7)
-    bar2 = ax.bar(ind, df['HLY-DEWP-NORMAL'], width, color = mic, edgecolor=mie, linewidth=1, alpha=0.7)
-    line1 = ax.plot(ind+width, df['HLY-HIDX-NORMAL'], color = lc, linewidth=3.0, alpha=0.5)
+    #bar1 = ax.bar(ind+width, df['HLY-TEMP-NORMAL'], width, color=mac, edgecolor=mae, linewidth=1, alpha=0.7)
+    bar1 = ax.bar(ind, df['HLY-TEMP-90PCTL'], width, color=mac, edgecolor=mae, linewidth=1, alpha=0.5)
+    bar2 = ax.bar(ind+width, df['HLY-TEMP-10PCTL'], width, color = mic, edgecolor=mie, linewidth=1, alpha=0.5)
+    #bar2 = ax.bar(ind, df['HLY-DEWP-NORMAL'], width, color = mic, edgecolor=mie, linewidth=1, alpha=0.7)
+    line2 = ax.plot(ind+width, df['HLY-HIDX-NORMAL'], color = 'red', linewidth=3.0, alpha=0.5)
+    line1 = ax.plot(ind+width, df['HLY-TEMP-NORMAL'], color = lc, linewidth=3.0, alpha=0.7)
+    line1 = ax.plot(ind+width, df['HLY-DEWP-NORMAL'], color = 'green', linewidth=3.0, alpha=0.6)
+    
     plt.ylabel('F',fontsize=12)
     plt.xticks(ind+width/2,df['dayYear'])
-    legend_elements = [Patch(facecolor=mac, edgecolor=mae, label='Hourly Temp Avg'),
-        Patch(facecolor=mic, edgecolor=mae, label='Dew Point Temp'),
-        Line2D([0], [0], color=lc, lw=3, label='Heat Index')]
+    legend_elements = [Patch(facecolor=mac, edgecolor=mae, label='Hourly 90th percentile'),
+        Patch(facecolor=mic, edgecolor=mae, label='Hourly 10th percentile'),
+        Line2D([0], [0], color=lc, lw=3, label='Hourly Temp Avg'),
+        Line2D([0], [0], color='red', lw=3, label='Hourly Heat Index Avg'),
+        Line2D([0], [0], color='red', lw=3, label='Hourly Dew Point Avg')]
     plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
     plt.xticks(rotation = 90, fontsize=10) 
     plt.title((f'{station} - HOURLY TEMP DATA - {month} {day} {year}'), fontsize=20, color='#575757',pad=30)
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
     plt.gca().spines['bottom'].set_visible(False)
-    ax.set_ylim([20, 100])
+    ax.set_ylim([10, 100])
     cl1, cl2 = st.columns([1,1])
     with cl1:
         st.pyplot(fig)

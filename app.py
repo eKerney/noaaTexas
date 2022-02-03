@@ -84,7 +84,7 @@ def getNOAAData(m, y, s):
 def getDailyData(m,y,s,d):
     mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
     # add 1 to day value, convert to int, then add leading zero if less than 10 for date format
-    d2 = (f'0{int(d)+1}') if (int(d)+1) < 9 else (f'{int(d)+1}')
+    d2 = (f'0{int(d)+1}') if (int(d)+1) < 10 else (f'{int(d)+1}')
     sta = {'OK CITY W ROGERS APT':'USW00013967','PENDLETON AIRPORT':'USW00024155','RALEIGH AIRPORT NC':'USW00013722'}                                         
     #st.write('NORMAL_HLY', (f'GHCND:{sta[s]}'), (f'2010-{mon[m]}-{d}'), '2010-01-02', 1000, 'metric')
     noaa = NOAAData()

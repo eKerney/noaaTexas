@@ -85,6 +85,7 @@ def getDailyData(m,y,s,d):
     mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
     # add 1 to day value, convert to int, then add leading zero if less than 10 for date format
     d2 = (f'0{int(d)+1}') if (int(d)+1) < 10 else (f'{int(d)+1}')
+    print(d, d2)
     sta = {'OK CITY W ROGERS APT':'USW00013967','PENDLETON AIRPORT':'USW00024155','RALEIGH AIRPORT NC':'USW00013722'}                                         
     #st.write('NORMAL_HLY', (f'GHCND:{sta[s]}'), (f'2010-{mon[m]}-{d}'), '2010-01-02', 1000, 'metric')
     noaa = NOAAData()
@@ -389,10 +390,23 @@ year = st.sidebar.selectbox(
 month = st.sidebar.select_slider(
      'SELECT MONTH',
      options=['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL','AUG','SEP','OCT','NOV','DEC'])
-day = st.sidebar.select_slider(
+
+if month == 'FEB':
+    day = st.sidebar.select_slider(
     'SELECT DAY',
-    options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31']
-)
+    options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
+    '20','21','22','23','24','25','26','27','28'])
+elif month=='APR' or month=='JUN' or month=='SEP' or month=='NOV':
+    day = st.sidebar.select_slider(
+        'SELECT DAY',
+        options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
+        '20','21','22','23','24','25','26','27','28','29','30'])
+else:
+    day = st.sidebar.select_slider(
+    'SELECT DAY',
+    options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
+    '20','21','22','23','24','25','26','27','28','29','30','31'])
+
 noaa = getNOAAData(month, year, station)
 getPlot(noaa, station, year, month)
 noaaDaily = getDailyData(month, year, station, day)

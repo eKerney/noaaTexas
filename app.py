@@ -84,13 +84,29 @@ def getNOAAData(m, y, s):
 def getDailyData(m,y,s,d):
     mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
     # add 1 to day value, convert to int, then add leading zero if less than 10 for date format
-    d2 = (f'0{int(d)+1}') if (int(d)+1) < 10 else (f'{int(d)+1}')
-    print(d, d2)
+    m2 = m
+    if m=='FEB':
+        d2 = (f'0{int(d)+1}') if (int(d)+1) < 10 else (f'{int(d)+1}')
+        if d2 == '29':
+            d2 = '01'
+            m2 = 'MAR'    
+    elif m=='APR' or m=='JUN' or m=='SEP' or m=='NOV':
+        d2 = (f'0{int(d)+1}') if (int(d)+1) < 10 else (f'{int(d)+1}')
+        if d2 == '31':
+            d2 = '01'
+            m2 = 'MAY' if m=='APR' else('JUL' if m=='JUN' else('OCT' if m=='SEP' else 'DEC'))
+        d2 = '01' if d == int(30) else d2
+    else:
+        d2 = (f'0{int(d)+1}') if (int(d)+1) < 10 else (f'{int(d)+1}')
+        if d2 == '32':
+            d2 = '01'
+            m2 = 'FEB' if m == 'JAN' else ('APR' if m == 'MAR' else ('JUN' if m == 'MAY' else ('AUG' if m == 'JUL' else ('SEP' if m == 'AUG' else ('NOV' if m=='OCT' else 'DEC')))))
+    print(d, d2, m, m2)
     sta = {'OK CITY W ROGERS APT':'USW00013967','PENDLETON AIRPORT':'USW00024155','RALEIGH AIRPORT NC':'USW00013722'}                                         
     #st.write('NORMAL_HLY', (f'GHCND:{sta[s]}'), (f'2010-{mon[m]}-{d}'), '2010-01-02', 1000, 'metric')
     noaa = NOAAData()
     # stan = noaa.stationData('NORMAL_HLY', 'GHCND:USW00024155', '2010-01-01', '2010-01-02', 1000, 'standard')
-    noaa.stationDataUnits('NORMAL_HLY', (f'GHCND:{sta[s]}'), (f'2010-{mon[m]}-{d}'), (f'2010-{mon[m]}-{d2}'), 1000, 'standard')
+    noaa.stationDataUnits('NORMAL_HLY', (f'GHCND:{sta[s]}'), (f'2010-{mon[m]}-{d}'), (f'2010-{mon[m2]}-{d2}'), 1000, 'standard')
     #st.write(noaa.df)
     return noaa
 

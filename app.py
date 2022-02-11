@@ -12,67 +12,10 @@ from functools import reduce
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
 import matplotlib as mpl
+from NOAA import *
 mpl.rcParams['text.color'] = '#575757'
 pd.options.mode.chained_assignment = None  # default='warn'
 
-@st.cache(allow_output_mutation=True)
-class NOAAData(object):
-    def __init__(self, token='ZXvAfJZyarrTJkcgefnAHuXmNAeATfci'):
-        try: 
-          # NOAA API Endpoint
-          self.url = 'https://www.ncdc.noaa.gov/cdo-web/api/v2/'
-          # User input added
-          if token == False:
-            token = getpass.getpass('NOAA API V2 TOKEN: ')
-          else:
-            token = token
-          self.h = dict(token=token)
-          print(f'Successfully created NOAAData API Object: {self}')
-        except:
-          print(f'COULD NOT CREATE NOAAData API OBJECT')
-
-    @st.cache(suppress_st_warning=True)
-    def poll_api(self, req_type, payload):
-        # Initiate http request - kwargs are constructed into a dict and passed as optional parameters
-        # Ex (limit=100, sortorder='desc', startdate='1970-10-03', etc)
-        r = requests.get(self.url + req_type, headers=self.h, params=payload)
-
-        if r.status_code != 200:  # Handle erroneous requests
-            print("Error: " + str(r.status_code))
-        else:
-            r = r.json()
-            try:
-                return r['results']  # Most JSON results are nested under 'results' key
-            except KeyError:
-                return r  # for non-nested results, return the entire JSON string
-
-    def stationData(self, dataSetID, stationID, startDate, endDate, limit):
-        req_type = 'data'
-        #startDate = input(f'Start Date(ex. 2021-01-01): ')
-        #endDate = input(f'End Date(ex. 2021-01-31): ')
-        params = {'datasetid': dataSetID, 'stationid': stationID, 'startdate': startDate, 'enddate': endDate, 'limit': limit}
-        #params = {'datasetid': 'GHCND', 'stationid': 'GHCND:USW00024155', 'startdate': '2022-01-01', 'enddate': '2022-01-10', 'limit': 1000}
-        data = self.poll_api(req_type, params)
-        self.df = pd.DataFrame(data)
-        return self.df
-    
-    def stationDataUnits(self, dataSetID, stationID, startDate, endDate, limit, units):
-        req_type = 'data'
-        params = {'datasetid': dataSetID, 'stationid': stationID, 'startdate': startDate, 'enddate': endDate, 'limit': limit, 'units':units}
-        data = self.poll_api(req_type, params)
-        self.df = pd.DataFrame(data)
-        return self.df
-
-    def stationDataParams(self, dataSetID, stationID, startDate, endDate, limit, units, datatypeid):
-        req_type = 'data'
-        params = {'datasetid': dataSetID, 'stationid': stationID, 'startdate': startDate, 'enddate': endDate, 'limit': limit, 'units': units, 'datatypeid': datatypeid}
-        data = self.poll_api(req_type, params)
-        self.df = pd.DataFrame(data)
-        return self.df
-
-    def filterDF(self, param):
-        dfFiltered = self.df[self.df.datatype == param ]
-        return dfFiltered
 
 # helper dataframe cleaning functions
 def getDF(df, param, expr):
@@ -93,7 +36,6 @@ def getMergedDF(sourceDF, dfList):
 
 ### DAILY NORMALS SECTION    
 def getDailyNormalsData(noaa, m, y, s):
-    print('in getNOAA')
     mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
     day = {'JAN':'01-31','FEB':'01-28','MAR':'01-31','APR':'01-30','MAY':'01-31','JUN':'01-30','JUL':'01-31','AUG':'01-31','SEP':'01-30','OCT':'01-31','NOV':'01-30','DEC':'01-31'}
     sta = {'OK CITY W ROGERS APT':'USW00013967','PENDLETON AIRPORT':'USW00024155','RALEIGH AIRPORT NC':'USW00013722'}                                         
@@ -102,18 +44,18 @@ def getDailyNormalsData(noaa, m, y, s):
         'DLY-PRCP-PCTALL-GE050HI','DLY-PRCP-PCTALL-GE0100HI','DLY-TAVG-NORMAL','DLY-TMAX-NORMAL','DLY-TMIN-NORMAL'])
     return noaa
 
-def showDailyNormals(noaa, station, year, month, day):
+def showDailyNormals(noaa, month, year, station):
     # functions to filter whole dataframe to retrive only records with specified parameter, and perfrom conversion 
     # format NOAA.df date attribute for hour and drop extraneous columns        
     noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][8:16]), axis=1)
     noaa.df = noaa.df.drop(['station','attributes','date'], axis=1)
     # iterate through list of parameters and conversion expressions
     paramList = [{'p':'DLY-DUTR-NORMAL', 'e':''}, {'p':'DLY-PRCP-25PCTL', 'e':''}, {'p':'DLY-PRCP-50PCTL','e':''},
-        {'p':'DLY-PRCP-75PCTL','e':''}, {'p':'DLY-PRCP-PCTALL-GE001HI','e':'*.10'}, {'p':'DLY-PRCP-PCTALL-GE010HI','e':'*.10'},
+        {'p':'DLY-PRCP-75PCTL','e':''}, {'p':'DLY-PRCP-PCTALL-GE001HI','e':''}, {'p':'DLY-PRCP-PCTALL-GE010HI','e':''},
         {'p':'DLY-PRCP-PCTALL-GE050HI','e':''}, {'p':'DLY-PRCP-PCTALL-GE100HI','e':''}, {'p':'DLY-TAVG-NORMAL','e':''}, 
-        {'p':'DLY-TMAX-NORMAL','e':'*.10'}, {'p':'DLY-TMIN-NORMAL','e':''}]
+        {'p':'DLY-TMAX-NORMAL','e':''}, {'p':'DLY-TMIN-NORMAL','e':''}]
     dfClean = getMergedDF(noaa.df, paramList)
-    dailyNormalsPlots(dfClean, station,year,month)
+    dailyNormalsPlots(dfClean, station , year, month)
 
 def dailyNormalsPlots(df, station, year, month):
     # Final dataframe cleaning before plotting
@@ -139,7 +81,7 @@ def dailyNormalsPlots(df, station, year, month):
         Patch(facecolor=Sc, edgecolor=Se, label='Hourly Clear %',alpha=0.7)]
     plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
     plt.xticks(rotation = 90, fontsize=10) 
-    plt.title((f'{station} -DLY-PRCP-25PCTL- {month} {day} {year}'), fontsize=20, color=txtC, pad=30, )
+    plt.title((f'{station} - Daily Precip Percentiles - {month}'), fontsize=20, color=txtC, pad=30, )
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
     plt.gca().spines['bottom'].set_visible(False)
@@ -164,7 +106,7 @@ def dailyNormalsPlots(df, station, year, month):
         Patch(facecolor=Sc, edgecolor=Se, label='Hourly Clear %',alpha=0.7)]
     plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
     plt.xticks(rotation = 90, fontsize=10) 
-    plt.title((f'{station} -DLY-PRCP-PCTALL-GE001HI- {month} {day} {year}'), fontsize=20, color=txtC, pad=30, )
+    plt.title((f'{station} -DLY-PRCP-PCTALL-GE001HI- {month}'), fontsize=20, color=txtC, pad=30, )
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
     plt.gca().spines['bottom'].set_visible(False)
@@ -192,11 +134,11 @@ def dailyNormalsPlots(df, station, year, month):
         Line2D([0], [0], color='red', lw=3, label='Hourly Dew Point Avg')]
     plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
     plt.xticks(rotation = 90, fontsize=10) 
-    plt.title((f'{station} - DLY-TAVG-NORMAL - {month} {day} {year}'), fontsize=20, color='#575757',pad=30)
+    plt.title((f'{station} - DAILY-TEMPERATURE-NORMALS - {month}'), fontsize=20, color='#575757',pad=30)
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
     plt.gca().spines['bottom'].set_visible(False)
-    #ax.set_ylim([10, 100])
+    ax.set_ylim([0, 100])
     cl1, cl2 = st.columns([1,1])
     with cl1:
         st.pyplot(fig)
@@ -546,7 +488,7 @@ st.markdown('---')
 
 # show daily normals data
 noaaDailyNorms = getDailyNormalsData(noaa, month, year, station)
-showDailyNormals(noaa, month, year, station, day)
+showDailyNormals(noaa, month, year, station)
 st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Daily Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
 st.markdown('---')
 

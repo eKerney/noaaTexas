@@ -13,6 +13,7 @@ from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
 import matplotlib as mpl
 from NOAA import *
+import scipy
 from scipy import interpolate
 from scipy.interpolate import make_interp_spline
 #import seaborn as sns

@@ -44,6 +44,19 @@ MTD-SNOW-NORMAL - Long-term average month-to-date snowfall amount
 YTD-PRCP-NORMAL - Long-term average year-to-date liquid precipitation amount
 YTD-SNOW-NORMAL - Long-term average year-to-date snowfall amount
 
+Monthly Parameters:
+['MLY-PRCP-NORMAL', 'MLY-PRCP-AVGNDS-GE001HI', 'MLY-PRCP-AVGNDS-GE010HI'
+'MLY-SNOW-NORMAL', 'MLY-SNOW-AVGNDS-GE001TI', 'MLY-SNOW-AVGNDS-GE010TI'
+'MLY-TAVG-NORMAL', 'MLY-TAVG-STDDEV', 'MLY-TMAX-NORMAL', 'MLY-TMAX-STDDEV',
+'MLY-TMIN-NORMAL', 'MLY-TMIN-STDDEV' 'MLY-DUTR-NORMAL']
+
+[{'p':'MLY-PRCP-NORMAL','e':''}, {'p':'MLY-PRCP-AVGNDS-GE001HI','e':''}, {'p':'MLY-PRCP-AVGNDS-GE010HI','e':''},
+{'p':'MLY-SNOW-NORMAL','e':''}, {'p':'MLY-SNOW-AVGNDS-GE001TI','e':''}, {'p':'MLY-SNOW-AVGNDS-GE010TI','e':''},
+{'p':'MLY-TAVG-NORMAL','e':''}, {'p':'MLY-TAVG-STDDEV','e':''}, {'p':'MLY-TMAX-NORMAL','e':''}, {'p':'MLY-TMAX-STDDEV','e':''},
+{'p':'MLY-TMIN-NORMAL','e':''}, {'p':'MLY-TMIN-STDDEV' {'p':'MLY-DUTR-NORMAL','e':''}]
+
+{'p':'DLY-DUTR-NORMAL', 'e':''}
+
 array(['MLY-CLDD-BASE45', 'MLY-CLDD-BASE50', 'MLY-CLDD-BASE55',
        'MLY-CLDD-BASE57', 'MLY-CLDD-BASE60', 'MLY-CLDD-BASE70',
        'MLY-CLDD-BASE72', 'MLY-CLDD-NORMAL', 'MLY-DUTR-NORMAL',

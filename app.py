@@ -13,24 +13,30 @@ from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
 import matplotlib as mpl
 from NOAA import *
+#import seaborn as sns
 mpl.rcParams['text.color'] = '#575757'
+mpl.rcParams['axes.edgecolor'] = '#575757'
 pd.options.mode.chained_assignment = None  # default='warn'
 
 
 # helper dataframe cleaning functions
 def getDF(df, param, expr):
-    #try:
+    try:
+        #st.write(param, expr)
         newDF = df[df.datatype == param]
+        df['value'] = df['value'].replace(-777.7, 0)
         newDF[param] = newDF.apply(lambda d: eval(f'd["value"]{expr}'), axis=1)
         newDF = newDF.drop(['value','datatype'], axis=1)
-    # except:
-    #     st.write('EXCEPT: ',param)
-    #     newDF = pd.DataFrame(columns = ['dayYear', param])
-        return newDF
+    except:
+         #st.write('EXCEPT: ',param)
+         newDF = pd.DataFrame(columns = ['dayYear', param])
+    return newDF
     
 def getMergedDF(sourceDF, dfList):
     dfFinal = pd.DataFrame(columns = ['dayYear'])
-    for x in dfList:
+
+    for x in dfList: 
+        #st.write(x)
         df = getDF(sourceDF, x['p'], x['e'])
         dfFinal = pd.merge(df, dfFinal, how='outer',on=['dayYear'])
     return dfFinal
@@ -39,155 +45,130 @@ def getMergedDF(sourceDF, dfList):
 def getMonthlyNormalsData(noaa, m, y, s):
     mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
     day = {'JAN':'01-31','FEB':'01-28','MAR':'01-31','APR':'01-30','MAY':'01-31','JUN':'01-30','JUL':'01-31','AUG':'01-31','SEP':'01-30','OCT':'01-31','NOV':'01-30','DEC':'01-31'}
-    sta = {'OK CITY W ROGERappS APT':'USW00013967','PENDLETON AIRPORT':'USW00024155','RALEIGH AIRPORT NC':'USW00013722'}                                         
-    paramList = ['DLY-DUTR-NORMAL', 'DLY-DUTR-STDDEV',
-        'DLY-PRCP-PCTALL-GE001HI','DLY-PRCP-PCTALL-GE010HI','DLY-PRCP-PCTALL-GE050HI','DLY-PRCP-PCTALL-GE100HI',
-        'DLY-SNOW-PCTALL-GE001TI','DLY-SNOW-PCTALL-GE010TI','DLY-SNOW-PCTALL-GE030TI','DLY-SNOW-PCTALL-GE050TI','DLY-SNOW-PCTALL-GE100TI',
-        'DLY-SNWD-PCTALL-GE001WI','DLY-SNWD-PCTALL-GE003WI','DLY-SNWD-PCTALL-GE005WI','DLY-SNWD-PCTALL-GE010WI',
-        'DLY-TAVG-NORMAL','DLY-TAVG-STDDEV','DLY-TMAX-NORMAL','DLY-TMIN-NORMAL',
-        'MTD-PRCP-NORMAL','MTD-SNOW-NORMAL','YTD-PRCP-NORMAL','YTD-SNOW-NORMAL' ]
-    noaa.stationDataParams('NORMAL_DLY', (f'GHCND:{sta[s]}'), (f'{2010}-{mon[m]}-{day[m][0:2]}') , (f'{2010}-{mon[m]}-{day[m][3:5]}'), 
-        1000, 'standard', paramList)
+    sta = {'OK CITY W ROGERS APT':'USW00013967','PENDLETON AIRPORT':'USW00024155','RALEIGH AIRPORT NC':'USW00013722'}                                         
+    paramList = ['MLY-PRCP-NORMAL', 'MLY-PRCP-AVGNDS-GE001HI', 'MLY-PRCP-AVGNDS-GE010HI',
+        'MLY-SNOW-NORMAL', 'MLY-SNOW-AVGNDS-GE001TI', 'MLY-SNOW-AVGNDS-GE010TI',
+        'MLY-TAVG-NORMAL', 'MLY-TAVG-STDDEV', 'MLY-TMAX-NORMAL', 'MLY-TMAX-STDDEV',
+        'MLY-TMIN-NORMAL', 'MLY-TMIN-STDDEV', 'MLY-DUTR-NORMAL']
+    noaa.stationDataParams('NORMAL_MLY', (f'GHCND:{sta[s]}'), (f'2010-01-01') , (f'2010-12-01'), 1000, 'standard', [])
+
     return noaa
 
 def showMonthlyNormals(noaa, month, year, station):
     # functions to filter whole dataframe to retrive only records with specified parameter, and perfrom conversion 
     # format NOAA.df date attribute for hour and drop extraneous columns        
-    noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][8:16]), axis=1)
+    noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][5:7]), axis=1)
     noaa.df = noaa.df.drop(['station','attributes','date'], axis=1)
+    
     # iterate through list of parameters and conversion expressions
-    paramList = [{'p':'DLY-DUTR-NORMAL', 'e':''},{'p':'DLY-DUTR-STDDEV', 'e':''},
-        {'p':'DLY-PRCP-PCTALL-GE001HI', 'e':''},{'p':'DLY-PRCP-PCTALL-GE010HI', 'e':''},{'p':'DLY-PRCP-PCTALL-GE050HI', 'e':''},{'p':'DLY-PRCP-PCTALL-GE100HI', 'e':''},
-        {'p':'DLY-SNOW-PCTALL-GE001TI', 'e':''},{'p':'DLY-SNOW-PCTALL-GE010TI', 'e':''},{'p':'DLY-SNOW-PCTALL-GE030TI', 'e':''},{'p':'DLY-SNOW-PCTALL-GE050TI', 'e':''},{'p':'DLY-SNOW-PCTALL-GE100TI','e':''},
-        {'p':'DLY-SNWD-PCTALL-GE001WI', 'e':''},{'p':'DLY-SNWD-PCTALL-GE003WI', 'e':''},{'p':'DLY-SNWD-PCTALL-GE005WI', 'e':''},{'p':'DLY-SNWD-PCTALL-GE010WI', 'e':''},
-        {'p':'DLY-TAVG-NORMAL', 'e':''},{'p':'DLY-TAVG-STDDEV', 'e':'*5'},{'p':'DLY-TMAX-NORMAL', 'e':''},{'p':'DLY-TMIN-NORMAL', 'e':''},
-        {'p':'MTD-PRCP-NORMAL', 'e':''},{'p':'MTD-SNOW-NORMAL', 'e':''},{'p':'YTD-PRCP-NORMAL', 'e':''},{'p':'YTD-SNOW-NORMAL', 'e':''}]
+    paramList = [{'p':'MLY-PRCP-NORMAL','e':'*2.54'}, {'p':'MLY-PRCP-AVGNDS-GE001HI','e':'*10'}, {'p':'MLY-PRCP-AVGNDS-GE010HI','e':'*10'},
+        {'p':'MLY-SNOW-NORMAL','e':'*2.54'}, {'p':'MLY-SNOW-AVGNDS-GE001TI','e':''}, {'p':'MLY-SNOW-AVGNDS-GE010TI','e':''},
+        {'p':'MLY-TAVG-NORMAL','e':''}, {'p':'MLY-TAVG-STDDEV','e':''}, {'p':'MLY-TMAX-NORMAL','e':''}, {'p':'MLY-TMAX-STDDEV','e':''},
+        {'p':'MLY-TMIN-NORMAL','e':''}, {'p':'MLY-TMIN-STDDEV','e':''}, {'p':'MLY-DUTR-NORMAL','e':''}]
     dfClean = getMergedDF(noaa.df, paramList)
-    dailyNormalsPlots(dfClean, station , year, month)
 
+    dfClean['TEMP-ADD-STD-POS'] = dfClean.apply(lambda d: (d['MLY-TAVG-NORMAL']+d['MLY-TAVG-STDDEV']), axis=1 )
+    dfClean['TEMP-ADD-STD-NEG'] = dfClean.apply(lambda d: (d['MLY-TAVG-NORMAL']-d['MLY-TAVG-STDDEV']), axis=1 )
+    
+    windAVG = getDailyWind(noaa, month, year, station)
+    
+    monthlyNormalsPlots(dfClean, station , year, month, windAVG[0], windAVG[1])
+  
 
-def dailyMonthlyPlots(df, station, year, month):
-    # Final dataframe cleaning before plotting
-    df['dayYear'] = df.apply(lambda d: (d['dayYear'][0:2]), axis=1)
-    #df['dayYear'] = noaa.df.apply(lambda d: (d['dayYear'][8:10]), axis=1)
-    df.drop(df.tail(1).index,inplace = True)
-    st.write(f'<h4 style="text-align:center;margin-top:-30px;">Daily Normals Weather Data</h4>', unsafe_allow_html=True)
+def monthlyNormalsPlots(df, station, year, month, wind, windGust):
+    st.write(f'<h1 style="text-align:center;margin-top:-100px;">{station}</h1>', unsafe_allow_html=True)
+    st.write(f'<h4 style="text-align:center;margin-top:-30px;">Monthly Averages Weather Data</h4>', unsafe_allow_html=True)
+    
+    mic, mie, mac, mae, lc = '#188bad','#0c303b','#fc6603','#662900','#4903fc' 
+    Pc, Pe, Sc, Se = '#006be6','#001a38','#5d6875','#22262b'
     WSF5c,WSF5e,WSF2c,WSF2e,AWNDc = '#1bab6b','#00542f','#72ab92','#00703f','#00ff8f'
     txtC = '#575757'
-    # plot for daily precip percentiles
-    # plot for hourly cloud coverage
-    fig, ax = plt.subplots(figsize=(12,6))
-    N = len(df.index)
-    ind = np.arange(N) 
-    width = 0.4
-    Pc, Pe, Sc, Se = '#006be6','#001a38','#5d6875','#22262b'
-    line1 = ax.plot(ind+width, df['DLY-PRCP-PCTALL-GE001HI'], color = 'red', linewidth=3.0, alpha=0.7)
-    line2 = ax.plot(ind+width, df['DLY-PRCP-PCTALL-GE010HI'], color = 'orange', linewidth=3.0, alpha=0.7)
-    line3 = ax.plot(ind+width, df['DLY-PRCP-PCTALL-GE050HI'], color = 'yellow', linewidth=3.0, alpha=0.7)
-    line4 = ax.plot(ind+width, df['DLY-PRCP-PCTALL-GE100HI'], color = 'green', linewidth=3.0, alpha=0.7)
-    plt.ylabel('%', fontsize=12)
-    plt.xticks(ind+width/2,df['dayYear'])
-    legend_elements = [
-        Line2D([0], [0], color='red', lw=3, label='DLY-PRCP-PCTALL-GE001HI'),
-        Line2D([0], [0], color='orange', lw=3, label='DLY-PRCP-PCTALL-GE010HI'),
-        Line2D([0], [0], color='yellow', lw=3, label='DLY-PRCP-PCTALL-GE050HI'),
-        Line2D([0], [0], color='green', lw=3, label='DLY-PRCP-PCTALL-GE100HI'),
-        ]
-    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
-    plt.xticks(rotation = 90, fontsize=10) 
-    plt.title((f'Probability of Precip >= 0.01 in for 29-day windows - {month}'), fontsize=20, color=txtC, pad=30, )
-    plt.gca().spines['top'].set_visible(False)
-    plt.gca().spines['right'].set_visible(False)
-    plt.gca().spines['bottom'].set_visible(False)
-    #ax.set_ylim([0, 100])
-    col1, col2 = st.columns([1,1])
-    with col1:
-        st.pyplot(fig)
-    
-    # plot for hourly cloud coverage
-    fig, ax = plt.subplots(figsize=(12,6))
-    N = len(df.index)
-    ind = np.arange(N) 
-    width = 0.4
-    Pc, Pe, Sc, Se = '#006be6','#001a38','#5d6875','#22262b'
-    line1 = ax.plot(ind+width, df['DLY-PRCP-PCTALL-GE001HI'], color = 'red', linewidth=3.0, alpha=0.7)
-    line2 = ax.plot(ind+width, df['DLY-PRCP-PCTALL-GE010HI'], color = 'orange', linewidth=3.0, alpha=0.7)
-    line3 = ax.plot(ind+width, df['DLY-PRCP-PCTALL-GE050HI'], color = 'yellow', linewidth=3.0, alpha=0.7)
-    line4 = ax.plot(ind+width, df['DLY-PRCP-PCTALL-GE100HI'], color = 'green', linewidth=3.0, alpha=0.7)
-    plt.ylabel('%', fontsize=12)
-    plt.xticks(ind+width/2,df['dayYear'])
-    legend_elements = [
-        Line2D([0], [0], color='red', lw=3, label='DLY-PRCP-PCTALL-GE001HI'),
-        Line2D([0], [0], color='orange', lw=3, label='DLY-PRCP-PCTALL-GE010HI'),
-        Line2D([0], [0], color='yellow', lw=3, label='DLY-PRCP-PCTALL-GE050HI'),
-        Line2D([0], [0], color='green', lw=3, label='DLY-PRCP-PCTALL-GE100HI'),
-        ]
-    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
-    plt.xticks(rotation = 90, fontsize=10) 
-    plt.title((f'Probability of Precip >= 0.01 in for 29-day windows - {month}'), fontsize=20, color=txtC, pad=30, )
-    plt.gca().spines['top'].set_visible(False)
-    plt.gca().spines['right'].set_visible(False)
-    plt.gca().spines['bottom'].set_visible(False)
-    #ax.set_ylim([0, 100])
-    with col2:
-        st.pyplot(fig)
-    
-    # plot daily temperature normals
-    fig, ax = plt.subplots(figsize=(12,6.1))
-    N = len(df.index)
-    ind = np.arange(N) 
-    width = 0.4
-    mic, mie, mac, mae, lc = '#188bad','#0c303b','#fc6603','#662900','#4903fc' 
-    bar1 = ax.bar(ind, df['DLY-TMAX-NORMAL'], width, color=mac, edgecolor=mae, linewidth=1, alpha=0.5)
-    bar2 = ax.bar(ind+width, df['DLY-TMIN-NORMAL'], width, color = mic, edgecolor=mie, linewidth=1, alpha=0.5)
-    #bar2 = ax.bar(ind, df['DLY-TAVG-STDDEV'], width, color = mic, edgecolor=mie, linewidth=1, alpha=0.7)
-    line2 = ax.plot(ind+width, df['DLY-TAVG-NORMAL'], color = 'red', linewidth=3.0, alpha=0.5)
-    line1 = ax.plot(ind+width, df['DLY-TAVG-STDDEV'], color = lc, linewidth=3.0, alpha=0.7)
-    plt.ylabel('F',fontsize=12)
-    plt.xticks(ind+width/2,df['dayYear'])
-    legend_elements = [Patch(facecolor=mac, edgecolor=mae, label='Daily Avg Temp Max'),
-        Patch(facecolor=mic, edgecolor=mae, label='Daily Avg Temp Min'),
-        Line2D([0], [0], color='red', lw=3, label='Daily Avg Temp '),
-        Line2D([0], [0], color=lc, lw=3, label='Daily Avg Temp Standard Dev.(x * 0.5)')]
-    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
-    plt.xticks(rotation = 90, fontsize=10) 
-    plt.title((f'{station} - DAILY-TEMPERATURE-NORMALS - {month}'), fontsize=20, color='#575757',pad=30)
-    plt.gca().spines['top'].set_visible(False)
-    plt.gca().spines['right'].set_visible(False)
-    plt.gca().spines['bottom'].set_visible(False)
-    ax.set_ylim([0, 100])
-    cl1, cl2 = st.columns([1,1])
-    with cl1:
-        st.pyplot(fig)
-    
-    # plot daily temperature normals
-    fig, ax = plt.subplots(figsize=(12,6.1))
-    N = len(df.index)
-    ind = np.arange(N) 
-    width = 0.4
-    mic, mie, mac, mae, lc = '#188bad','#0c303b','#fc6603','#662900','#4903fc' 
-    #bar1 = ax.bar(ind, df['DLY-TMAX-NORMAL'], width, color=mac, edgecolor=mae, linewidth=1, alpha=0.5)
-    #bar2 = ax.bar(ind+width, df['DLY-TMIN-NORMAL'], width, color = mic, edgecolor=mie, linewidth=1, alpha=0.5)
-    #bar2 = ax.bar(ind, df['DLY-TAVG-STDDEV'], width, color = mic, edgecolor=mie, linewidth=1, alpha=0.7)
-    line2 = ax.plot(ind+width, df['DLY-DUTR-NORMAL'], color = 'red', linewidth=3.0, alpha=0.5)
-    line1 = ax.plot(ind+width, df['DLY-DUTR-STDDEV'], color = lc, linewidth=3.0, alpha=0.7)
-    plt.ylabel('F',fontsize=12)
-    plt.xticks(ind+width/2,df['dayYear'])
-    legend_elements = [
-        Line2D([0], [0], color='red', lw=3, label='Avg Daily Temp Range Std Dev.'),
-        Line2D([0], [0], color=lc, lw=3, label='Daily Avg Temp Standard Dev.')]
-    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
-    plt.xticks(rotation = 90, fontsize=10) 
-    plt.title((f'{station} - DAILY DIURNAL TEMPERATURE RANGE - {month}'), fontsize=20, color='#575757',pad=30)
-    plt.gca().spines['top'].set_visible(False)
-    plt.gca().spines['right'].set_visible(False)
-    plt.gca().spines['bottom'].set_visible(False)
-    #ax.set_ylim([0, 100])
-    with cl2:
-        st.pyplot(fig)
 
+    fig, ax = plt.subplots(figsize=(8,6))
+    N = len(df.index)
+    ind = np.arange(N) 
+    width = 0.2
+    
+    line1 = ax.plot(ind+width, df['MLY-TMAX-NORMAL'], color = mac, linewidth=2.0, alpha=0.6)
+    line2 = ax.plot(ind+width, df['MLY-TAVG-NORMAL'], color = lc, linewidth=4.0, alpha=0.6)
+    line3 = ax.plot(ind+width, df['MLY-TMIN-NORMAL'], color = mic, linewidth=2.0, alpha=0.6)
+    line4 = ax.plot(ind+width, df['MLY-PRCP-AVGNDS-GE010HI'], color = AWNDc, linewidth=2.0, alpha=0.5)
+    line5 = ax.plot(ind+width, df['TEMP-ADD-STD-POS'], color = 'grey', linewidth=1.0, alpha=0.5)
+    line6 = ax.plot(ind+width, df['TEMP-ADD-STD-NEG'], color = 'grey', linewidth=1.0, alpha=0.5)
+    #bar4 = ax.bar(ind+width+.4, windGust['WSF5_MEAN'], width, color = WSF5c, edgecolor=WSF5e, linewidth=1, alpha=0.5)
+    #line7 = ax.fill_betweenx(ind+width, windGust['WSF5_MEAN'], color = 'black', linewidth=1.0, alpha=0.5)
+    ax.set_ylim([10, 100])
+    plt.ylabel('Temp F',fontsize=12, color=txtC)
 
-### DAILY NORMALS SECTION    
+    ax2 = ax.twinx() 
+    bar1 = ax2.bar(ind-(width-.2), df['MLY-PRCP-NORMAL'], width, color=Pc, edgecolor=Pe, linewidth=1, alpha=0.5)
+    bar2 = ax2.bar(ind+.2, df['MLY-SNOW-NORMAL'], width, color = Sc, edgecolor=Se, linewidth=1, alpha=0.5)
+    bar3 = ax2.bar(ind+width+.2, wind['AWND_MEAN'], width, color = WSF2c, edgecolor=WSF2e, linewidth=1, alpha=0.3)
+    bar4 = ax2.bar(ind+width+.4, windGust['WSF5_MEAN'], width, color = WSF5c, edgecolor=WSF5e, linewidth=1, alpha=0.4)
+    #bar4 = ax2.bar(ind+width+.5, df['TEMP-ADD-STD'], width, color = WSF5c, edgecolor=WSF5e, linewidth=1, alpha=0.6)
+    ax2.set_ylim([0, 60])
+   
+    plt.xticks(ind+width/2,df['dayYear'])
+    legend_elements = [
+        Line2D([0], [0], color=mac, lw=3, label='Avg Mon Max Temp'),
+        Line2D([0], [0], color=lc, lw=3, label='Avg Mon Temp'),
+        Line2D([0], [0], color=mic, lw=3, label='Avg Mon Min Temp'),
+        Line2D([0], [0], color=AWNDc, lw=3, label='# days precip>0.10 in (10X)'),
+        Patch(facecolor=Pc, edgecolor=Pe, label='Avg Mon Precip cm'),
+        Patch(facecolor=Sc, edgecolor=Se, label='Avg Mon Snow cm'),
+        Patch(facecolor=WSF2c, edgecolor=WSF2e, label='Avg Mon Wind Spd mph'),
+        Patch(facecolor=WSF2c, edgecolor=WSF2e, label='Avg Mon Wind Gust mph'),
+        ]
+    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.03, loc='upper left', fontsize=8)
+    plt.xticks(rotation = 90, fontsize=12) 
+    plt.title((f'Monthly Climate Chart - {station}'), fontsize=20, color=txtC, pad=30, )
+    ax.set_facecolor('#f7f7f7')
+    fig.patch.set_facecolor('#f7f7f7')
+
+    ax.tick_params(axis='y', colors=txtC)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.tick_params(axis='x', colors=txtC)
+
+    ax2.set_ylabel("Precip/Wind",fontsize=12, color=txtC)
+    ax2.tick_params(axis='y', colors=txtC)
+    ax2.spines['bottom'].set_visible(False)
+    ax2.spines['top'].set_visible(False)
+
+    st.pyplot(fig)
+    #st.write(df)
+   
+
+@st.cache()
+def getDailyWind(noaa, m, y, s):
+    dfAWND = pd.DataFrame(columns = ['month','AWND_MEAN'])
+    mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
+    day = {'JAN':'01-31','FEB':'01-28','MAR':'01-31','APR':'01-30','MAY':'01-31','JUN':'01-30','JUL':'01-31','AUG':'01-31','SEP':'01-30','OCT':'01-31','NOV':'01-30','DEC':'01-31'}
+    sta = {'OK CITY W ROGERS APT':'USW00013967','PENDLETON AIRPORT':'USW00024155','RALEIGH AIRPORT NC':'USW00013722'}                                         
+    paramList = ['AWND']
+    paramsVals = [{'p':'AWND', 'e':'*.223694'}]
+    #noaa.stationData('GHCND', (f'GHCND:{sta[s]}'), (f'{y}-{mon[m]}-{day[m][0:2]}') , (f'{y}-{mon[m]}-{day[m][3:5]}'), 1000)
+    for month in mon:
+        #st.write(month)
+        noaa.stationDataParams('GHCND', (f'GHCND:{sta[s]}'), (f'2021-{mon[month]}-{day[month][0:2]}'),(f'2021-{mon[month]}-{day[month][3:5]}'), 1000, '', paramList)
+        noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][5:10]), axis=1)
+        noaa.df = noaa.df.drop(['station','attributes','date'], axis=1)
+        mean = noaa.df.mean()
+        dfAWND.loc[len(dfAWND)]=[mon[month], (noaa.df.mean())[0]*.223694]
+    
+    dfWSF5 = pd.DataFrame(columns = ['month','WSF5_MEAN'])
+    paramList = ['WSF5']
+    for month in mon:
+        #st.write(month)
+        noaa.stationDataParams('GHCND', (f'GHCND:{sta[s]}'), (f'2021-{mon[month]}-{day[month][0:2]}'),(f'2021-{mon[month]}-{day[month][3:5]}'), 1000, '', paramList)
+        noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][5:10]), axis=1)
+        noaa.df = noaa.df.drop(['station','attributes','date'], axis=1)
+        mean = noaa.df.mean()
+        dfWSF5.loc[len(dfWSF5)]=[mon[month], (noaa.df.mean())[0]*.223694]
+        #st.write(dfFinal)
+    return [dfAWND, dfWSF5]   
+
+### DAILY NORMALS SECTION     
 def getDailyNormalsData(noaa, m, y, s):
     mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
     day = {'JAN':'01-31','FEB':'01-28','MAR':'01-31','APR':'01-30','MAY':'01-31','JUN':'01-30','JUL':'01-31','AUG':'01-31','SEP':'01-30','OCT':'01-31','NOV':'01-30','DEC':'01-31'}
@@ -339,78 +320,29 @@ def dailyNormalsPlots(df, station, year, month):
         st.pyplot(fig)
 
 
-### DAILY DATA SECTION    
+### DAILY DATA SECTION
+
 def getDailyData(noaa, m, y, s):
     mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
     day = {'JAN':'01-31','FEB':'01-28','MAR':'01-31','APR':'01-30','MAY':'01-31','JUN':'01-30','JUL':'01-31','AUG':'01-31','SEP':'01-30','OCT':'01-31','NOV':'01-30','DEC':'01-31'}
     sta = {'OK CITY W ROGERS APT':'USW00013967','PENDLETON AIRPORT':'USW00024155','RALEIGH AIRPORT NC':'USW00013722'}                                         
-    noaa.stationData('GHCND', (f'GHCND:{sta[s]}'), (f'{y}-{mon[m]}-{day[m][0:2]}') , (f'{y}-{mon[m]}-{day[m][3:5]}'), 1000)
+    
+    paramList = ['AWND','PRCP','SNOW','TAVG','TMAX','TMIN','WSF5','WSF2']
+    #noaa.stationData('GHCND', (f'GHCND:{sta[s]}'), (f'{y}-{mon[m]}-{day[m][0:2]}') , (f'{y}-{mon[m]}-{day[m][3:5]}'), 1000)
+    noaa.stationDataParams('GHCND', (f'GHCND:{sta[s]}'), (f'{y}-{mon[m]}-{day[m][0:2]}') , (f'{y}-{mon[m]}-{day[m][3:5]}'), 1000, '', paramList)
     return noaa
 
 def showDaily(noaa, station, year, month):
     noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][8:10]), axis=1)
     noaa.df = noaa.df.drop(['station','attributes','date'], axis=1)
-    # average daily wind given in meters/sec
-    try:
-        AWND = noaa.filterDF('AWND')
-        AWND['AWND'] = AWND.apply(lambda d: (d['value'] * .223694), axis=1)
-        AWND = AWND.drop(['value','datatype'], axis=1)
-    except:
-        AWND = pd.DataFrame(columns = ['dayYear', 'AWND'])
-    # 5 second wind gust given in meters/sec
-    try:
-        WSF5 = noaa.filterDF('WSF5')
-        WSF5['WSF5'] = WSF5.apply(lambda d: (d['value'] * .223694), axis=1)
-        WSF5 = WSF5.drop(['value','datatype'], axis=1)
-    except:
-        WSF5 = pd.DataFrame(columns = ['dayYear', 'WSF5'])
-    # 2 minute sustained wind given in meters/sec
-    try:   
-        WSF2 = noaa.filterDF('WSF2')
-        WSF2['WSF2'] = WSF2.apply(lambda d: (d['value'] * .223694), axis=1)
-        WSF2 = WSF2.drop(['value','datatype'], axis=1)
-    except:
-        WSF2 = pd.DataFrame(columns = ['dayYear', 'WSF2'])
-    # precipitation given in tenths of a millimeter
-    try:
-        PRCP = noaa.filterDF('PRCP')
-        PRCP['PRCP'] = PRCP.apply(lambda d: (d['value'] * 0.1), axis=1)
-        PRCP = PRCP.drop(['value','datatype'], axis=1)
-    except:
-        PRCP = pd.DataFrame(columns = ['dayYear', 'PRCP'])
-    # snow given in actual millimeters
-    try:
-        SNOW = noaa.filterDF('SNOW')
-        SNOW['SNOW'] = SNOW.apply(lambda d: (d['value']) * 0.1, axis=1)
-        SNOW = SNOW.drop(['value','datatype'], axis=1)
-    except:
-        SNOW = pd.DataFrame(columns = ['dayYear', 'SNOW'])
-    # All temps given in Celsius tenths of a degree
-    try:    
-        TAVG = noaa.filterDF('TAVG')
-        TAVG['TAVG'] = TAVG.apply(lambda d: (d['value'] * .18) + 32, axis=1)
-        TAVG = TAVG.drop(['value','datatype'], axis=1)
-    except:
-        TAVG = pd.DataFrame(columns = ['dayYear', 'TAVG'])
-    try:
-        TMAX = noaa.filterDF('TMAX')
-        TMAX['TMAX'] = TMAX.apply(lambda d: (d['value'] * .18) + 32, axis=1)
-        TMAX = TMAX.drop(['value','datatype'], axis=1)
-    except:
-        TMAX = pd.DataFrame(columns = ['dayYear', 'TMAX'])
-    try:
-        TMIN = noaa.filterDF('TMIN')
-        TMIN['TMIN'] = TMIN.apply(lambda d: (d['value'] * .18) + 32, axis=1)
-        TMIN = TMIN.drop(['value','datatype'], axis=1)
-    except:
-        TMIN= pd.DataFrame(columns = ['dayYear', 'TMIN'])
-    # merge all dataframes into one dataframe to rule them all!
-    dfs= [AWND, WSF5, WSF2, TAVG, TMAX, TMIN, SNOW, PRCP]
-    dfM = reduce(lambda left,right: pd.merge(left,right,on=['dayYear']), dfs)
-    dailyPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2, station, year,month, dfM)
-    #st.pyplot(fig)   
+    # iterate through list of parameters and conversion expressions
+    paramList = [{'p':'AWND', 'e':'*.223694'},{'p':'PRCP', 'e':'*0.1'},
+        {'p':'SNOW', 'e':'*0.1'},{'p':'TAVG', 'e':'*.18+32'},{'p':'TMAX', 'e':'*.18+32'},{'p':'TMIN', 'e':'*.18+32'},
+        {'p':'WSF5', 'e':'*.223694'},{'p':'WSF2', 'e':'*.223694'},]
+    dfClean = getMergedDF(noaa.df, paramList)
+    dailyPlots(station, year,month, dfClean)
 
-def dailyPlots(AWND,PRCP,SNOW,TAVG,TMAX,TMIN,WSF5,WSF2,station, year, month, dfM):
+def dailyPlots(station, year, month, dfM):
     st.write(f'<h1 style="text-align:center;margin-top:-100px;">{station}</h1>', unsafe_allow_html=True)
     st.write(f'<h4 style="text-align:center;margin:-40px;">Daily Weather Data</h4>', unsafe_allow_html=True)
     #st.markdown('Pendleton')
@@ -673,9 +605,9 @@ else:
 noaa = NOAAData()
 
 # show daily data for specific month/year 2021 - 2014 
-#noaaDaily = getDailyData(noaa, month, year, station)
-#showDaily(noaa, station, year, month)
-st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Daily Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
+noaaMonthly = getMonthlyNormalsData(noaa, month, year, station)
+showMonthlyNormals(noaaMonthly, month, year, station)
+st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
 st.markdown('---')
 
 # show daily data for specific month/year 2021 - 2014 

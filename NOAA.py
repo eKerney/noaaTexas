@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 import getpass
 
-@st.cache(allow_output_mutation=True)
+#@st.cache(allow_output_mutation=True)
 class NOAAData(object):
     def __init__(self, token='ZXvAfJZyarrTJkcgefnAHuXmNAeATfci'):
         try: 
@@ -19,7 +19,7 @@ class NOAAData(object):
         except:
           print(f'COULD NOT CREATE NOAAData API OBJECT')
 
-    @st.cache(suppress_st_warning=True)
+   # @st.cache(suppress_st_warning=True)
     def poll_api(self, req_type, payload):
         # Initiate http request - kwargs are constructed into a dict and passed as optional parameters
         # Ex (limit=100, sortorder='desc', startdate='1970-10-03', etc)

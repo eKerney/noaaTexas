@@ -634,8 +634,8 @@ st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Hist
 st.markdown('---')
 
 # show daily data for specific month/year 2021 - 2014 
-#noaaDaily = getDailyData(noaa, month, year, station)
-#showDaily(noaa, station, year, month)
+noaaDaily = getDailyData(noaa, month, year, station)
+showDaily(noaa, station, year, month)
 st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - Daily Land Surface Observations </p>', unsafe_allow_html=True)
 st.markdown('---')
 

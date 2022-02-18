@@ -625,7 +625,8 @@ def changeStatus():
         options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
         '20','21','22','23','24','25','26','27','28','29','30','31'], on_change=changeDay)
 
-    # show daily data for specific month/year 2021 - 2014 
+    # show daily data for specific month/year 2021 - 2014
+    noaa = NOAAData() 
     noaaMonthly = getMonthlyNormalsData(noaa, month, year, station)
     showMonthlyNormals(noaaMonthly, month, year, station)
     st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
@@ -669,7 +670,8 @@ def changeDay():
         options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
         '20','21','22','23','24','25','26','27','28','29','30','31'], on_change=changeDay)
 
-    # show daily data for specific month/year 2021 - 2014 
+    # show daily data for specific month/year 2021 - 2014
+    noaa = NOAAData() 
     noaaMonthly = getMonthlyNormalsData(noaa, month, year, station)
     showMonthlyNormals(noaaMonthly, month, year, station)
     st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)

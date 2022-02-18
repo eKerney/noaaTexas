@@ -163,7 +163,7 @@ def monthlyNormalsPlots(df, station, year, month, wind, windGust):
     
     #st.pyplot(fig)
        
-
+@st.cache()
 def getDailyWind(noaa, m, y, s):
     dfAWND = pd.DataFrame(columns = ['month','AWND_MEAN'])
     mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
@@ -627,7 +627,7 @@ def changeStatus():
     # show daily data for specific month/year 2021 - 2014
     noaa = NOAAData() 
     noaaMonthly = getMonthlyNormalsData(noaa, month, year, station)
-    showMonthlyNormals(noaaMonthly, month, year, station)
+    showMonthlyNormals(noaa, month, year, station)
     st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
     st.markdown('---')
 
@@ -672,7 +672,7 @@ def changeDay():
     # show daily data for specific month/year 2021 - 2014
     noaa = NOAAData() 
     noaaMonthly = getMonthlyNormalsData(noaa, month, year, station)
-    showMonthlyNormals(noaaMonthly, month, year, station)
+    showMonthlyNormals(noaa, month, year, station)
     st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
     st.markdown('---')
 
@@ -723,7 +723,7 @@ def changeStation():
     # show daily data for specific month/year 2021 - 2014 
     noaa = NOAAData()
     noaaMonthly = getMonthlyNormalsData(noaa, month, year, station)
-    showMonthlyNormals(noaaMonthly, month, year, station)
+    showMonthlyNormals(noaa, month, year, station)
     st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
     st.markdown('---')
 
@@ -767,7 +767,7 @@ if 'active' not in st.session_state:
     noaa = NOAAData()
     # show daily data for specific month/year 2021 - 2014 
     noaaMonthly = getMonthlyNormalsData(noaa, month, year, station)
-    showMonthlyNormals(noaaMonthly, month, year, station)
+    showMonthlyNormals(noaa, month, year, station)
     st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
     st.markdown('---')
 

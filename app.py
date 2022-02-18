@@ -80,14 +80,14 @@ def showMonthlyNormals(noaa, month, year, station):
 
 def monthlyNormalsPlots(df, station, year, month, wind, windGust):
     st.write(f'<h1 style="text-align:center;margin-top:-100px;">{station}</h1>', unsafe_allow_html=True)
-    st.write(f'<h4 style="text-align:center;margin-top:-30px;">Monthly Averages Weather Data</h4>', unsafe_allow_html=True)
+    st.write(f'<h3 style="text-align:center;margin-top:-30px;">Monthly Weather Suitability</h3>', unsafe_allow_html=True)
     
     mic, mie, mac, mae, lc = '#188bad','#0c303b','#fc6603','#662900','#4903fc' 
     Pc, Pe, Sc, Se = '#006be6','#001a38','#5d6875','#22262b'
     WSF5c,WSF5e,WSF2c,WSF2e,AWNDc = '#1bab6b','#00542f','#72ab92','#00703f','#00d477'
     txtC = '#575757'
 
-    fig, ax = plt.subplots(figsize=(8,6))
+    fig, ax = plt.subplots(figsize=(10,6))
     N = len(df.index)
     ind = np.arange(N) 
     width = 0.2
@@ -144,7 +144,7 @@ def monthlyNormalsPlots(df, station, year, month, wind, windGust):
         ]
     plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.5, loc='upper left', fontsize=8)
     plt.xticks(rotation = 90, fontsize=12) 
-    plt.title((f'Monthly Climate Chart - {station}'), fontsize=20, color=txtC, pad=30, )
+    plt.title((f'{station} - Monthly Climate Normals'), fontsize=20, color=txtC, pad=30, )
     ax.set_facecolor('#f7f7f7')
     fig.patch.set_facecolor('#f7f7f7')
 
@@ -158,9 +158,12 @@ def monthlyNormalsPlots(df, station, year, month, wind, windGust):
     ax2.spines['bottom'].set_visible(False)
     ax2.spines['top'].set_visible(False)
 
-    st.pyplot(fig)
-    #st.write(df)
-   
+    col1, col2,col3 = st.columns([1,10,1])
+    with col2:
+        st.pyplot(fig)
+    
+    #st.pyplot(fig)
+       
 
 @st.cache()
 def getDailyWind(noaa, m, y, s):
@@ -351,7 +354,6 @@ def getDailyData(noaa, m, y, s):
     sta = {'OK CITY W ROGERS APT':'USW00013967','PENDLETON AIRPORT':'USW00024155','RALEIGH AIRPORT NC':'USW00013722'}                                         
     
     paramList = ['AWND','PRCP','SNOW','TAVG','TMAX','TMIN','WSF5','WSF2']
-    #noaa.stationData('GHCND', (f'GHCND:{sta[s]}'), (f'{y}-{mon[m]}-{day[m][0:2]}') , (f'{y}-{mon[m]}-{day[m][3:5]}'), 1000)
     noaa.stationDataParams('GHCND', (f'GHCND:{sta[s]}'), (f'{y}-{mon[m]}-{day[m][0:2]}') , (f'{y}-{mon[m]}-{day[m][3:5]}'), 1000, '', paramList)
     return noaa
 
@@ -366,9 +368,8 @@ def showDaily(noaa, station, year, month):
     dailyPlots(station, year,month, dfClean)
 
 def dailyPlots(station, year, month, dfM):
-    st.write(f'<h1 style="text-align:center;margin-top:-100px;">{station}</h1>', unsafe_allow_html=True)
+    #st.write(f'<h1 style="text-align:center;margin-top:-100px;">{station}</h1>', unsafe_allow_html=True)
     st.write(f'<h4 style="text-align:center;margin:-40px;">Daily Weather Data</h4>', unsafe_allow_html=True)
-    #st.markdown('Pendleton')
     # column layout for side by side charts
     col1, col2 = st.columns([1,1])
     txtC = '#575757'
@@ -516,7 +517,7 @@ def hourlyNormalsPlots(df, station, year, month):
         Line2D([0], [0], color=AWNDc, lw=3, label='Wind Dir Degrees * 10')]
     plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
     plt.xticks(rotation = 90, fontsize=10) 
-    plt.title((f'{station} - HOURLY WIND DATA - {month} {day} {year}'), fontsize=20, color='#575757', pad=30)
+    plt.title((f'{station} - HOURLY WIND AVG - {month} 1981 - 2010'), fontsize=20, color='#575757', pad=30)
     ax.set_ylim([2, 16])
     # make a plot with different y-axis using second axis object
     ax2 = ax.twinx() 
@@ -549,7 +550,7 @@ def hourlyNormalsPlots(df, station, year, month):
         Patch(facecolor=Sc, edgecolor=Se, label='Hourly Clear %',alpha=0.7)]
     plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
     plt.xticks(rotation = 90, fontsize=10) 
-    plt.title((f'{station} - HOURLY CLOUD DATA - {month} {day} {year}'), fontsize=20, color=txtC, pad=30, )
+    plt.title((f'{station} - HOURLY CLOUD AVG - {month} 1981 - 2010'), fontsize=20, color=txtC, pad=30, )
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
     plt.gca().spines['bottom'].set_visible(False)
@@ -580,7 +581,7 @@ def hourlyNormalsPlots(df, station, year, month):
         Line2D([0], [0], color='red', lw=3, label='Hourly Dew Point Avg')]
     plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
     plt.xticks(rotation = 90, fontsize=10) 
-    plt.title((f'{station} - HOURLY TEMP DATA - {month} {day} {year}'), fontsize=20, color='#575757',pad=30)
+    plt.title((f'{station} - HOURLY TEMP AVG - {month} 1981 - 2010'), fontsize=20, color='#575757',pad=30)
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
     plt.gca().spines['bottom'].set_visible(False)
@@ -593,61 +594,208 @@ def hourlyNormalsPlots(df, station, year, month):
         st.dataframe(df, None, 210)
 
 
+def changeStatus():
+    #st.write(f'<h1 style="text-align:center;margin-top:-70px;">CHANGE STATUS</h1>', unsafe_allow_html=True)
+    global viewState 
+    viewState = 'MONTH'
+    st.session_state.active = True
+
+     # sliders and widgets
+    station = st.sidebar.selectbox(
+        'SELECT STATION',
+        ('PENDLETON AIRPORT','OK CITY W ROGERS APT','RALEIGH AIRPORT NC'), on_change=changeStation)     
+    year = st.sidebar.selectbox(
+        'SELECT YEAR',
+        ('2021','2020','2019','2018','2017','2016','2015','2014'), on_change=changeStatus)
+    month = st.sidebar.select_slider(
+        'SELECT MONTH',
+        options=['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL','AUG','SEP','OCT','NOV','DEC'], on_change=changeStatus)
+    if month == 'FEB':
+        day = st.sidebar.select_slider(
+        'SELECT DAY',
+        options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
+        '20','21','22','23','24','25','26','27','28'], on_change=changeDay)
+    elif month=='APR' or month=='JUN' or month=='SEP' or month=='NOV':
+        day = st.sidebar.select_slider(
+            'SELECT DAY',
+            options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
+            '20','21','22','23','24','25','26','27','28','29','30'], on_change=changeDay)
+    else:
+        day = st.sidebar.select_slider(
+        'SELECT DAY',
+        options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
+        '20','21','22','23','24','25','26','27','28','29','30','31'], on_change=changeDay)
+
+    # show daily data for specific month/year 2021 - 2014 
+    noaaMonthly = getMonthlyNormalsData(noaa, month, year, station)
+    showMonthlyNormals(noaaMonthly, month, year, station)
+    st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
+    st.markdown('---')
+
+    #show daily data for specific month/year 2021 - 2014 
+    noaaDaily = getDailyData(noaa, month, year, station)
+    showDaily(noaaDaily, station, year, month)
+    st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - Daily Land Surface Observations </p>', unsafe_allow_html=True)
+    st.markdown('---')
+
+def changeDay():
+    #st.write(f'<h1 style="text-align:center;margin-top:-70px;">CHANGE STATUS</h1>', unsafe_allow_html=True)
+    global viewState 
+    viewState = 'DAY'
+    st.session_state.active = True
+
+     # sliders and widgets
+    station = st.sidebar.selectbox(
+        'SELECT STATION',
+        ('PENDLETON AIRPORT','OK CITY W ROGERS APT','RALEIGH AIRPORT NC'), on_change=changeStation)     
+    year = st.sidebar.selectbox(
+        'SELECT YEAR',
+        ('2021','2020','2019','2018','2017','2016','2015','2014'),on_change=changeStatus)
+    month = st.sidebar.select_slider(
+        'SELECT MONTH',
+        options=['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL','AUG','SEP','OCT','NOV','DEC'], on_change=changeStatus)
+    if month == 'FEB':
+        day = st.sidebar.select_slider(
+        'SELECT DAY',
+        options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
+        '20','21','22','23','24','25','26','27','28'], on_change=changeDay)
+    elif month=='APR' or month=='JUN' or month=='SEP' or month=='NOV':
+        day = st.sidebar.select_slider(
+            'SELECT DAY',
+            options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
+            '20','21','22','23','24','25','26','27','28','29','30'], on_change=changeDay)
+    else:
+        day = st.sidebar.select_slider(
+        'SELECT DAY',
+        options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
+        '20','21','22','23','24','25','26','27','28','29','30','31'], on_change=changeDay)
+
+    # show daily data for specific month/year 2021 - 2014 
+    noaaMonthly = getMonthlyNormalsData(noaa, month, year, station)
+    showMonthlyNormals(noaaMonthly, month, year, station)
+    st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
+    st.markdown('---')
+
+    #show daily data for specific month/year 2021 - 2014 
+    noaaDaily = getDailyData(noaa, month, year, station)
+    showDaily(noaaDaily, station, year, month)
+    st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - Daily Land Surface Observations </p>', unsafe_allow_html=True)
+    st.markdown('---')
+
+    # show hourly normals data
+    noaaHourly = getHourlyNormals(noaa, month, year, station, day)
+    showHourlyNormals(noaaHourly, station, year, month, day)
+    st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Hourly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
+    st.markdown('---')
+
+def changeStation():
+    #st.write(f'<h1 style="text-align:center;margin-top:-70px;">CHANGE STATUS</h1>', unsafe_allow_html=True)
+    global viewState 
+    viewState = 'MONTH'
+    st.session_state.active = True
+
+     # sliders and widgets
+    station = st.sidebar.selectbox(
+        'SELECT STATION',
+        ('PENDLETON AIRPORT','OK CITY W ROGERS APT','RALEIGH AIRPORT NC'), on_change=changeStation)     
+    # year = st.sidebar.selectbox(
+    #     'SELECT YEAR',
+    #     ('2021','2020','2019','2018','2017','2016','2015','2014'), on_change=changeStatus)
+    month = st.sidebar.select_slider(
+        'SELECT MONTH',
+        options=['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL','AUG','SEP','OCT','NOV','DEC'], on_change=changeStatus)
+    if month == 'FEB':
+        day = st.sidebar.select_slider(
+        'SELECT DAY',
+        options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
+        '20','21','22','23','24','25','26','27','28'], on_change=changeDay)
+    elif month=='APR' or month=='JUN' or month=='SEP' or month=='NOV':
+        day = st.sidebar.select_slider(
+            'SELECT DAY',
+            options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
+            '20','21','22','23','24','25','26','27','28','29','30'], on_change=changeDay)
+    else:
+        day = st.sidebar.select_slider(
+        'SELECT DAY',
+        options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
+        '20','21','22','23','24','25','26','27','28','29','30','31'], on_change=changeDay)
+
+    # show daily data for specific month/year 2021 - 2014 
+    noaaMonthly = getMonthlyNormalsData(noaa, month, 2010, station)
+    showMonthlyNormals(noaaMonthly, month, 2010, station)
+    st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
+    st.markdown('---')
+
+
 ### MAIN APP FLOW
 # page config
 st.set_page_config(layout="wide")
 st.markdown(""" <style>#MainMenu {visibility: hidden;}footer {visibility: hidden;}</style> """, unsafe_allow_html=True)
-# sliders and widgets
-station = st.sidebar.selectbox(
-     'SELECT STATION',
-     ('PENDLETON AIRPORT','OK CITY W ROGERS APT','RALEIGH AIRPORT NC'))     
-year = st.sidebar.selectbox(
-     'SELECT YEAR',
-     ('2021','2020','2019','2018','2017','2016','2015','2014'))
-month = st.sidebar.select_slider(
-     'SELECT MONTH',
-     options=['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL','AUG','SEP','OCT','NOV','DEC'])
-if month == 'FEB':
-    day = st.sidebar.select_slider(
-    'SELECT DAY',
-    options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
-    '20','21','22','23','24','25','26','27','28'])
-elif month=='APR' or month=='JUN' or month=='SEP' or month=='NOV':
-    day = st.sidebar.select_slider(
+
+if 'active' not in st.session_state:
+    #st.write(f'<h1 style="text-align:center;margin-top:-70px;">DATAMINR SUPERBOWL ALERTS NOT ACTIVE</h1>', unsafe_allow_html=True)
+    viewState = 'BASE'
+    st.session_state.active = False
+
+    # sliders and widgets
+    station = st.sidebar.selectbox(
+        'SELECT STATION',
+        ('PENDLETON AIRPORT','OK CITY W ROGERS APT','RALEIGH AIRPORT NC'), on_change=changeStation)     
+    # year = st.sidebar.selectbox(
+    #     'SELECT YEAR',
+    #     ('2021','2020','2019','2018','2017','2016','2015','2014'), on_change=changeStatus)
+    month = st.sidebar.select_slider(
+        'SELECT MONTH',
+        options=['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL','AUG','SEP','OCT','NOV','DEC'], on_change=changeStatus)
+    if month == 'FEB':
+        day = st.sidebar.select_slider(
         'SELECT DAY',
         options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
-        '20','21','22','23','24','25','26','27','28','29','30'])
-else:
-    day = st.sidebar.select_slider(
-    'SELECT DAY',
-    options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
-    '20','21','22','23','24','25','26','27','28','29','30','31'])
+        '20','21','22','23','24','25','26','27','28'])
+    elif month=='APR' or month=='JUN' or month=='SEP' or month=='NOV':
+        day = st.sidebar.select_slider(
+            'SELECT DAY',
+            options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
+            '20','21','22','23','24','25','26','27','28','29','30'])
+    else:
+        day = st.sidebar.select_slider(
+        'SELECT DAY',
+        options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
+        '20','21','22','23','24','25','26','27','28','29','30','31'])
+        
+    noaa = NOAAData()
+    # show daily data for specific month/year 2021 - 2014 
+    noaaMonthly = getMonthlyNormalsData(noaa, month, 2010, station)
+    showMonthlyNormals(noaaMonthly, month, 2010, station)
+    st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
+    st.markdown('---')
+
 
 ### Data Function Workflow
 # get NOAAData() class object auth
-noaa = NOAAData()
+#noaa = NOAAData()
 
 # show daily data for specific month/year 2021 - 2014 
-noaaMonthly = getMonthlyNormalsData(noaa, month, year, station)
-showMonthlyNormals(noaaMonthly, month, year, station)
-st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
-st.markdown('---')
+# noaaMonthly = getMonthlyNormalsData(noaa, month, year, station)
+# showMonthlyNormals(noaaMonthly, month, year, station)
+# st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
+# st.markdown('---')
 
 # show daily data for specific month/year 2021 - 2014 
-noaaDaily = getDailyData(noaa, month, year, station)
-showDaily(noaa, station, year, month)
-st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - Daily Land Surface Observations </p>', unsafe_allow_html=True)
-st.markdown('---')
+# noaaDaily = getDailyData(noaa, month, year, station)
+# showDaily(noaa, station, year, month)
+# st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - Daily Land Surface Observations </p>', unsafe_allow_html=True)
+# st.markdown('---')
 
 # show daily normals data
 #noaaDailyNorms = getDailyNormalsData(noaa, month, year, station)
 #showDailyNormals(noaa, month, year, station)
-st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Daily Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
-st.markdown('---')
+#st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Daily Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
+#st.markdown('---')
 
 # show hourly normals data
 #noaaHourly = getHourlyNormals(noaa, month, year, station, day)
 #showHourlyNormals(noaaHourly, station, year, month, day)
-st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Hourly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
-st.markdown('---')
+# st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Hourly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
+# st.markdown('---')
 

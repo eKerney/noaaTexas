@@ -13,6 +13,8 @@ from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
 import matplotlib as mpl
 from NOAA import *
+from scipy import interpolate
+from scipy.interpolate import make_interp_spline
 #import seaborn as sns
 mpl.rcParams['text.color'] = '#575757'
 mpl.rcParams['axes.edgecolor'] = '#575757'
@@ -81,45 +83,65 @@ def monthlyNormalsPlots(df, station, year, month, wind, windGust):
     
     mic, mie, mac, mae, lc = '#188bad','#0c303b','#fc6603','#662900','#4903fc' 
     Pc, Pe, Sc, Se = '#006be6','#001a38','#5d6875','#22262b'
-    WSF5c,WSF5e,WSF2c,WSF2e,AWNDc = '#1bab6b','#00542f','#72ab92','#00703f','#00ff8f'
+    WSF5c,WSF5e,WSF2c,WSF2e,AWNDc = '#1bab6b','#00542f','#72ab92','#00703f','#00d477'
     txtC = '#575757'
 
     fig, ax = plt.subplots(figsize=(8,6))
     N = len(df.index)
     ind = np.arange(N) 
     width = 0.2
+
+    TMAXnp,TAVGnp,TMINnp = df['MLY-TMAX-NORMAL'].to_numpy(), df['MLY-TAVG-NORMAL'].to_numpy(), df['MLY-TMIN-NORMAL'].to_numpy(),
+    PRCP_01np,TPOSnp,TNEGnp = df['MLY-PRCP-AVGNDS-GE010HI'].to_numpy(), df['TEMP-ADD-STD-POS'].to_numpy(),df['TEMP-ADD-STD-NEG'].to_numpy()
+    npX = (df.index).to_numpy()
     
-    line1 = ax.plot(ind+width, df['MLY-TMAX-NORMAL'], color = mac, linewidth=2.0, alpha=0.6)
-    line2 = ax.plot(ind+width, df['MLY-TAVG-NORMAL'], color = lc, linewidth=4.0, alpha=0.6)
-    line3 = ax.plot(ind+width, df['MLY-TMIN-NORMAL'], color = mic, linewidth=2.0, alpha=0.6)
-    line4 = ax.plot(ind+width, df['MLY-PRCP-AVGNDS-GE010HI'], color = AWNDc, linewidth=2.0, alpha=0.5)
-    line5 = ax.plot(ind+width, df['TEMP-ADD-STD-POS'], color = 'grey', linewidth=1.0, alpha=0.5)
-    line6 = ax.plot(ind+width, df['TEMP-ADD-STD-NEG'], color = 'grey', linewidth=1.0, alpha=0.5)
-    #bar4 = ax.bar(ind+width+.4, windGust['WSF5_MEAN'], width, color = WSF5c, edgecolor=WSF5e, linewidth=1, alpha=0.5)
-    #line7 = ax.fill_betweenx(ind+width, windGust['WSF5_MEAN'], color = 'black', linewidth=1.0, alpha=0.5)
+    X_Y_Spline = make_interp_spline(npX, TMAXnp)
+    X_ = np.linspace(npX.min(), npX.max(), 500)
+    TMAX = X_Y_Spline(X_)
+
+    X_Y_Spline = make_interp_spline(npX, TAVGnp)
+    TAVG = X_Y_Spline(X_)
+
+    X_Y_Spline = make_interp_spline(npX, TMINnp)
+    TMIN = X_Y_Spline(X_)
+
+    X_Y_Spline = make_interp_spline(npX, PRCP_01np)
+    PRCP_01 = X_Y_Spline(X_)
+
+    X_Y_Spline = make_interp_spline(npX, TPOSnp)
+    TPOS = X_Y_Spline(X_)
+
+    X_Y_Spline = make_interp_spline(npX, TNEGnp)
+    TNEG = X_Y_Spline(X_)
+
+    line1 = ax.plot(X_+width, TMAX, color = mac, linewidth=2.5, alpha=0.7,dashes=[3, 1, 3, 1, 2, 1])
+    line2 = ax.plot(X_+width, TAVG, color = lc, linewidth=4.0, alpha=0.6)
+    line3 = ax.plot(X_+width, TMIN, color = mic, linewidth=2.5, alpha=0.8, dashes=[2.5, 1, 2.5, 1, 2, 1])
+    line4 = ax.plot(X_+width, PRCP_01, color = AWNDc, linewidth=2.5, alpha=1.0,linestyle='dotted')
+    line5 = ax.plot(X_+width, TPOS, color = '#a380ff', linewidth=1.0, alpha=0.8, linestyle='dotted')
+    line6 = ax.plot(X_+width, TNEG, color = '#a380ff', linewidth=1.0, alpha=0.8, linestyle='dotted')
     ax.set_ylim([10, 100])
     plt.ylabel('Temp F',fontsize=12, color=txtC)
 
     ax2 = ax.twinx() 
-    bar1 = ax2.bar(ind-(width-.2), df['MLY-PRCP-NORMAL'], width, color=Pc, edgecolor=Pe, linewidth=1, alpha=0.5)
-    bar2 = ax2.bar(ind+.2, df['MLY-SNOW-NORMAL'], width, color = Sc, edgecolor=Se, linewidth=1, alpha=0.5)
-    bar3 = ax2.bar(ind+width+.2, wind['AWND_MEAN'], width, color = WSF2c, edgecolor=WSF2e, linewidth=1, alpha=0.3)
-    bar4 = ax2.bar(ind+width+.4, windGust['WSF5_MEAN'], width, color = WSF5c, edgecolor=WSF5e, linewidth=1, alpha=0.4)
-    #bar4 = ax2.bar(ind+width+.5, df['TEMP-ADD-STD'], width, color = WSF5c, edgecolor=WSF5e, linewidth=1, alpha=0.6)
+    bar1 = ax2.bar(ind-(width-0), df['MLY-PRCP-NORMAL'], width, color=Pc, edgecolor=Pe, linewidth=1, alpha=0.5)
+    bar2 = ax2.bar(ind, df['MLY-SNOW-NORMAL'], width, color = Sc, edgecolor=Se, linewidth=1, alpha=0.5)
+    bar3 = ax2.bar(ind+width, wind['AWND_MEAN'], width, color = WSF2c, edgecolor=WSF2e, linewidth=1, alpha=0.3)
+    bar4 = ax2.bar(ind+width+.2, windGust['WSF5_MEAN'], width, color = WSF5c, edgecolor=WSF5e, linewidth=1, alpha=0.4)
     ax2.set_ylim([0, 60])
    
     plt.xticks(ind+width/2,df['dayYear'])
     legend_elements = [
-        Line2D([0], [0], color=mac, lw=3, label='Avg Mon Max Temp'),
+        Line2D([0], [0], color=mac, lw=2, label='Avg Mon Max Temp', dashes=[3, 1, 3, 1, 2, 1]),
         Line2D([0], [0], color=lc, lw=3, label='Avg Mon Temp'),
-        Line2D([0], [0], color=mic, lw=3, label='Avg Mon Min Temp'),
-        Line2D([0], [0], color=AWNDc, lw=3, label='# days precip>0.10 in (10X)'),
+        Line2D([0], [0], color=mic, lw=2, label='Avg Mon Min Temp', dashes=[2.5, 1, 2.5, 1, 2, 1]),
+        Line2D([0], [0], color=AWNDc, lw=2, label='# days precip>0.10 in (10X)',linestyle='dotted'),
         Patch(facecolor=Pc, edgecolor=Pe, label='Avg Mon Precip cm'),
         Patch(facecolor=Sc, edgecolor=Se, label='Avg Mon Snow cm'),
         Patch(facecolor=WSF2c, edgecolor=WSF2e, label='Avg Mon Wind Spd mph'),
-        Patch(facecolor=WSF2c, edgecolor=WSF2e, label='Avg Mon Wind Gust mph'),
+        Patch(facecolor=WSF5c, edgecolor=WSF5e, label='Avg Mon Wind Gust mph'),
         ]
-    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.03, loc='upper left', fontsize=8)
+    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.5, loc='upper left', fontsize=8)
     plt.xticks(rotation = 90, fontsize=12) 
     plt.title((f'Monthly Climate Chart - {station}'), fontsize=20, color=txtC, pad=30, )
     ax.set_facecolor('#f7f7f7')

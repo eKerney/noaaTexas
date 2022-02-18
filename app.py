@@ -54,7 +54,6 @@ def getMonthlyNormalsData(noaa, m, y, s):
         'MLY-TAVG-NORMAL', 'MLY-TAVG-STDDEV', 'MLY-TMAX-NORMAL', 'MLY-TMAX-STDDEV',
         'MLY-TMIN-NORMAL', 'MLY-TMIN-STDDEV', 'MLY-DUTR-NORMAL']
     noaa.stationDataParams('NORMAL_MLY', (f'GHCND:{sta[s]}'), (f'2010-01-01') , (f'2010-12-01'), 1000, 'standard', [])
-
     return noaa
 
 def showMonthlyNormals(noaa, month, year, station):
@@ -721,6 +720,7 @@ def changeStation():
         '20','21','22','23','24','25','26','27','28','29','30','31'], on_change=changeDay)
     year = 2010
     # show daily data for specific month/year 2021 - 2014 
+    noaa = NOAAData()
     noaaMonthly = getMonthlyNormalsData(noaa, month, year, station)
     showMonthlyNormals(noaaMonthly, month, year, station)
     st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)

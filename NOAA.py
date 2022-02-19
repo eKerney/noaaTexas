@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 import getpass
 
-#@st.cache(allow_output_mutation=True)
+@st.cache(allow_output_mutation=True)
 class NOAAData(object):
     def __init__(self, token='ZXvAfJZyarrTJkcgefnAHuXmNAeATfci'):
         try: 

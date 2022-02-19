@@ -37,7 +37,6 @@ def getDF(df, param, expr):
     
 def getMergedDF(sourceDF, dfList):
     dfFinal = pd.DataFrame(columns = ['dayYear'])
-
     for x in dfList: 
         #st.write(x)
         df = getDF(sourceDF, x['p'], x['e'])
@@ -72,11 +71,9 @@ def showMonthlyNormals(noaa, month, year, station):
     dfClean['TEMP-ADD-STD-POS'] = dfClean.apply(lambda d: (d['MLY-TAVG-NORMAL']+d['MLY-TAVG-STDDEV']), axis=1 )
     dfClean['TEMP-ADD-STD-NEG'] = dfClean.apply(lambda d: (d['MLY-TAVG-NORMAL']-d['MLY-TAVG-STDDEV']), axis=1 )
     
-    windAVG = getDailyWind(noaa, month, year, station)
-    
-    monthlyNormalsPlots(dfClean, station , year, month, windAVG[0], windAVG[1])
+    windAVGALL = getDailyWindALL(noaa, month, year, station)
+    monthlyNormalsPlots(dfClean, station , year, month, windAVGALL[0], windAVGALL[1])
   
-
 def monthlyNormalsPlots(df, station, year, month, wind, windGust):
     st.write(f'<h1 style="text-align:center;margin-top:-100px;">{station}</h1>', unsafe_allow_html=True)
     st.write(f'<h3 style="text-align:center;margin-top:-30px;">Monthly Weather Suitability</h3>', unsafe_allow_html=True)
@@ -162,42 +159,31 @@ def monthlyNormalsPlots(df, station, year, month, wind, windGust):
         st.pyplot(fig)
     
     #st.pyplot(fig)
-       
-#@st.cache(suppress_st_warning=True)
-def getDailyWind(noaa, m, y, s):
-    dfAWND = pd.DataFrame(columns = ['month','AWND_MEAN'])
+@st.cache(suppress_st_warning=True)  
+def getDailyWindALL(noaa, m, y, s):
+    dfAWND = pd.DataFrame(columns = ['monNum','month','AWND_MEAN'])
+    dfWSF5 = pd.DataFrame(columns = ['monNum','month','WSF5_MEAN'])
     mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
     day = {'JAN':'01-31','FEB':'01-28','MAR':'01-31','APR':'01-30','MAY':'01-31','JUN':'01-30','JUL':'01-31','AUG':'01-31','SEP':'01-30','OCT':'01-31','NOV':'01-30','DEC':'01-31'}
     sta = {'OK CITY W ROGERS APT':'USW00013967','PENDLETON AIRPORT':'USW00024155','RALEIGH AIRPORT NC':'USW00013722'}                                         
-    paramList = ['AWND']
-    paramsVals = [{'p':'AWND', 'e':'*.223694'}]
-    #noaa.stationData('GHCND', (f'GHCND:{sta[s]}'), (f'{y}-{mon[m]}-{day[m][0:2]}') , (f'{y}-{mon[m]}-{day[m][3:5]}'), 1000)
+    paramList = ['AWND', 'WSF5']
+    noaa.stationDataParams('GHCND', (f'GHCND:{sta[s]}'), (f'2021-01-01'),(f'2021-12-31'), 1000, '', paramList)
+    # processing part
+    noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][5:12]), axis=1)
+    noaa.df = noaa.df.drop(['station','attributes','date'], axis=1)
+    paramList = [{'p':'AWND','e':'*.223694'}, {'p':'WSF5','e':'*.223694'}, ]
+    dfClean = getMergedDF(noaa.df, paramList)
+    index = 0
     for month in mon:
-        # writing to screen fo debugging
-        st.write(month)
-        st.write(f'2021-{mon[month]}-{day[month][0:2]}')
-        st.write(f'2021-{mon[month]}-{day[month][3:5]}')
-        df = noaa.stationDataParams('GHCND', (f'GHCND:{sta[s]}'), (f'2021-{mon[month]}-{day[month][0:2]}'),(f'2021-{mon[month]}-{day[month][3:5]}'), 1000, '', paramList)
-        st.write(noaa.df)
-        st.write(df)
-        if len(noaa.df) != 0:
-            noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][5:10]), axis=1)
-            noaa.df = noaa.df.drop(['station','attributes','date'], axis=1)
-            mean = noaa.df.mean()
-            dfAWND.loc[len(dfAWND)]=[mon[month], (noaa.df.mean())[0]*.223694]
+        fromDate, toDate = (int(day[month][0:1])), ((int(day[month][3:5])))
+        meanAWND = dfClean['AWND'].iloc[(fromDate+index):(toDate + index)].mean()
+        meanWSF5 = dfClean['WSF5'].iloc[(fromDate+index):(toDate + index)].mean()
+        index += toDate
+        dfAWND.loc[dfAWND.shape[0]] = [mon[month],month, meanAWND]
+        dfWSF5.loc[dfWSF5.shape[0]] = [mon[month],month, meanWSF5]
     
-    dfWSF5 = pd.DataFrame(columns = ['month','WSF5_MEAN'])
-    paramList = ['WSF5']
-    for month in mon:
-        #st.write(month)
-        noaa.stationDataParams('GHCND', (f'GHCND:{sta[s]}'), (f'2021-{mon[month]}-{day[month][0:2]}'),(f'2021-{mon[month]}-{day[month][3:5]}'), 1000, '', paramList)
-        noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][5:10]), axis=1)
-        noaa.df = noaa.df.drop(['station','attributes','date'], axis=1)
-        mean = noaa.df.mean()
-        dfWSF5.loc[len(dfWSF5)]=[mon[month], (noaa.df.mean())[0]*.223694]
-        #st.write(dfFinal)
     return [dfAWND, dfWSF5]   
-
+ 
 ### DAILY NORMALS SECTION     
 def getDailyNormalsData(noaa, m, y, s):
     mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}

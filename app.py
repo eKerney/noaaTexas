@@ -175,6 +175,8 @@ def getDailyWind(noaa, m, y, s):
     for month in mon:
         # writing to screen fo debugging
         st.write(month)
+        st.write(f'2021-{mon[month]}-{day[month][0:2]}')
+        st.write(f'2021-{mon[month]}-{day[month][3:5]}')
         noaa.stationDataParams('GHCND', (f'GHCND:{sta[s]}'), (f'2021-{mon[month]}-{day[month][0:2]}'),(f'2021-{mon[month]}-{day[month][3:5]}'), 1000, '', paramList)
         st.write(noaa.df)
         noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][5:10]), axis=1)

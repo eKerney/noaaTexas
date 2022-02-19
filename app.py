@@ -180,10 +180,11 @@ def getDailyWind(noaa, m, y, s):
         df = noaa.stationDataParams('GHCND', (f'GHCND:{sta[s]}'), (f'2021-{mon[month]}-{day[month][0:2]}'),(f'2021-{mon[month]}-{day[month][3:5]}'), 1000, '', paramList)
         st.write(noaa.df)
         st.write(df)
-        noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][5:10]), axis=1)
-        noaa.df = noaa.df.drop(['station','attributes','date'], axis=1)
-        mean = noaa.df.mean()
-        dfAWND.loc[len(dfAWND)]=[mon[month], (noaa.df.mean())[0]*.223694]
+        if len(noaa.df) != 0:
+            noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][5:10]), axis=1)
+            noaa.df = noaa.df.drop(['station','attributes','date'], axis=1)
+            mean = noaa.df.mean()
+            dfAWND.loc[len(dfAWND)]=[mon[month], (noaa.df.mean())[0]*.223694]
     
     dfWSF5 = pd.DataFrame(columns = ['month','WSF5_MEAN'])
     paramList = ['WSF5']

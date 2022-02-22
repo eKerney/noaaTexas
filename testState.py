@@ -196,14 +196,11 @@ def main():
         year = 2010    
         noaa = NOAAData()
         # show daily data for specific month/year 2021 - 2014 
-        tic1 = time.perf_counter()
+        
         noaaMonthly = getMonthlyNormalsData(noaa, month, year, station)
-        toc = time.perf_counter()
-        st.write(f"Ran getMothlyNormalsData() in {toc - tic1:0.4f} seconds")
-        tic2 = time.perf_counter()
+    
+        
         showMonthlyNormals(noaaMonthly, month, year, station)
-        toc = time.perf_counter()
-        st.write(f"Ran showMonthlyNormals() in {toc - tic2:0.4f} seconds")
 
         st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
         st.markdown('---')

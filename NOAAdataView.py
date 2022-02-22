@@ -1,3 +1,4 @@
+from attr import mutable
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -154,7 +155,8 @@ def monthlyNormalsPlots(df, station, year, month, wind, windGust):
     #st.pyplot(fig)
 @st.experimental_memo(suppress_st_warning=True, show_spinner=False) 
 def getDailyWindALL(df, y, s):
-    
+    ### working in here with dataframes and processing but 2/22/2022 
+    #st.write(df)
     noaa = NOAAData()
     dfAWND = pd.DataFrame(columns = ['monNum','month','AWND_MEAN'])
     dfWSF5 = pd.DataFrame(columns = ['monNum','month','WSF5_MEAN'])
@@ -162,11 +164,14 @@ def getDailyWindALL(df, y, s):
     day = {'JAN':'01-31','FEB':'01-28','MAR':'01-31','APR':'01-30','MAY':'01-31','JUN':'01-30','JUL':'01-31','AUG':'01-31','SEP':'01-30','OCT':'01-31','NOV':'01-30','DEC':'01-31'}
     sta = {'OK CITY W ROGERS APT':'USW00013967','PENDLETON AIRPORT':'USW00024155','RALEIGH AIRPORT NC':'USW00013722'}                                         
     paramList = ['AWND', 'WSF5']
-    noaa.stationDataParams('GHCND', (f'GHCND:{sta[s]}'), (f'2021-01-01'),(f'2021-12-31'), 1000, '', paramList)
+    noaaDF = noaa.stationDataParams('GHCND', (f'GHCND:{sta[s]}'), (f'2021-01-01'),(f'2021-12-31'), 1000, '', paramList)
     # processing part
-    
+    noaaDF['dayYear'] = noaaDF.apply(lambda d: (d['date'][5:7]), axis=1)
+    noaaDF = noaaDF.drop(['station','attributes','date'], axis=1)
+
     paramList = [{'p':'AWND','e':'*.223694'}, {'p':'WSF5','e':'*.223694'}, ]
-    dfClean = getMergedDF(df, paramList)
+    dfClean = getMergedDF(noaaDF, paramList)
+    #st.write(dfClean)
     index = 0
     for month in mon:
         fromDate, toDate = (int(day[month][0:1])), ((int(day[month][3:5])))
@@ -175,7 +180,7 @@ def getDailyWindALL(df, y, s):
         index += toDate
         dfAWND.loc[dfAWND.shape[0]] = [mon[month],month, meanAWND]
         dfWSF5.loc[dfWSF5.shape[0]] = [mon[month],month, meanWSF5]
-    
+    #st.write(dfAWND, dfWSF5)
     return [dfAWND, dfWSF5]   
  
 ### DAILY NORMALS SECTION

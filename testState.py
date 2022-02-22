@@ -5,6 +5,7 @@ import datetime as dt
 import matplotlib.pyplot as plt 
 from functools import reduce
 import matplotlib as mpl
+import time
 from NOAA import *
 from NOAAdataView import *
 
@@ -15,6 +16,7 @@ from scipy.interpolate import make_interp_spline
 mpl.rcParams['text.color'] = '#575757'
 mpl.rcParams['axes.edgecolor'] = '#575757'
 pd.options.mode.chained_assignment = None  # default='warn'
+
 
 st.set_page_config(layout="wide")
 st.markdown(""" <style>#MainMenu {visibility: hidden;}footer {visibility: hidden;}</style> """, unsafe_allow_html=True)
@@ -29,28 +31,34 @@ def changeStatus():
      # sliders and widgets
     station = st.sidebar.selectbox(
         'SELECT STATION',
-        ('PENDLETON AIRPORT','OK CITY W ROGERS APT','RALEIGH AIRPORT NC'), on_change=changeStation)     
+        ('PENDLETON AIRPORT','OK CITY W ROGERS APT','RALEIGH AIRPORT NC'), 
+        on_change=changeStation, key='station')     
     year = st.sidebar.selectbox(
         'SELECT YEAR',
-        ('2021','2020','2019','2018','2017','2016','2015','2014'), on_change=changeStatus)
+        ('2021','2020','2019','2018','2017','2016','2015','2014'), 
+        on_change=changeStatus, key='year')
     month = st.sidebar.select_slider(
         'SELECT MONTH',
-        options=['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL','AUG','SEP','OCT','NOV','DEC'], on_change=changeStatus)
+        options=['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL','AUG','SEP','OCT','NOV','DEC'], 
+        on_change=changeStatus, key='month')
     if month == 'FEB':
         day = st.sidebar.select_slider(
         'SELECT DAY',
         options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
-        '20','21','22','23','24','25','26','27','28'], on_change=changeDay)
+        '20','21','22','23','24','25','26','27','28'], 
+        on_change=changeDay, key='day28')
     elif month=='APR' or month=='JUN' or month=='SEP' or month=='NOV':
         day = st.sidebar.select_slider(
             'SELECT DAY',
             options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
-            '20','21','22','23','24','25','26','27','28','29','30'], on_change=changeDay)
+            '20','21','22','23','24','25','26','27','28','29','30'], 
+            on_change=changeDay, key='day30')
     else:
         day = st.sidebar.select_slider(
         'SELECT DAY',
         options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
-        '20','21','22','23','24','25','26','27','28','29','30','31'], on_change=changeDay)
+        '20','21','22','23','24','25','26','27','28','29','30','31'], 
+        on_change=changeDay, key='day31')
 
     # show daily data for specific month/year 2021 - 2014
     noaa = NOAAData() 
@@ -119,7 +127,7 @@ def changeDay():
 def changeStation():
     #st.write(f'<h1 style="text-align:center;margin-top:-70px;">CHANGE STATUS</h1>', unsafe_allow_html=True)
     global viewState 
-    viewState = 'MONTH'
+    viewState = 'STATION'
     st.session_state.active = True
 
      # sliders and widgets
@@ -155,7 +163,6 @@ def changeStation():
 
 def main():
     if 'active' not in st.session_state:
-        #st.write(f'<h1 style="text-align:center;margin-top:-70px;">DATAMINR SUPERBOWL ALERTS NOT ACTIVE</h1>', unsafe_allow_html=True)
         viewState = 'BASE'
         st.session_state.active = False
 
@@ -164,7 +171,6 @@ def main():
             'SELECT STATION',
             ('PENDLETON AIRPORT','OK CITY W ROGERS APT','RALEIGH AIRPORT NC'), 
             on_change=changeStation, key='station')     
-
         month = st.sidebar.select_slider(
             'SELECT MONTH',
             options=['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL','AUG','SEP','OCT','NOV','DEC'], 
@@ -174,24 +180,31 @@ def main():
             'SELECT DAY',
             options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
             '20','21','22','23','24','25','26','27','28'], 
-            on_change=changeDay)
+            on_change=changeDay, key='day28')
         elif month=='APR' or month=='JUN' or month=='SEP' or month=='NOV':
             day = st.sidebar.select_slider(
                 'SELECT DAY',
                 options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
                 '20','21','22','23','24','25','26','27','28','29','30'],
-                on_change=changeDay)
+                on_change=changeDay, key='day30')
         else:
             day = st.sidebar.select_slider(
-            'SELECT DAY',
-            options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
-            '20','21','22','23','24','25','26','27','28','29','30','31'],
-            on_change=changeDay)
+                'SELECT DAY',
+                options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
+                '20','21','22','23','24','25','26','27','28','29','30','31'],
+            on_change=changeDay, key='day31')
         year = 2010    
         noaa = NOAAData()
         # show daily data for specific month/year 2021 - 2014 
+        tic1 = time.perf_counter()
         noaaMonthly = getMonthlyNormalsData(noaa, month, year, station)
+        toc = time.perf_counter()
+        st.write(f"Ran getMothlyNormalsData() in {toc - tic1:0.4f} seconds")
+        tic2 = time.perf_counter()
         showMonthlyNormals(noaaMonthly, month, year, station)
+        toc = time.perf_counter()
+        st.write(f"Ran showMonthlyNormals() in {toc - tic2:0.4f} seconds")
+
         st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
         st.markdown('---')
 

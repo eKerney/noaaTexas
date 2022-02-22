@@ -10,6 +10,7 @@ from NOAA import *
 import scipy
 from scipy import interpolate
 from scipy.interpolate import make_interp_spline
+import time
 
 mpl.rcParams['text.color'] = '#575757'
 mpl.rcParams['axes.edgecolor'] = '#575757'
@@ -18,27 +19,24 @@ pd.options.mode.chained_assignment = None  # default='warn'
 # helper dataframe cleaning functions
 def getDF(df, param, expr):
     try:
-        #st.write(param, expr)
         newDF = df[df.datatype == param]
         df['value'] = df['value'].replace(-777.7, 0)
         newDF[param] = newDF.apply(lambda d: eval(f'd["value"]{expr}'), axis=1)
         newDF = newDF.drop(['value','datatype'], axis=1)
     except:
-         #st.write('EXCEPT: ',param)
          newDF = pd.DataFrame(columns = ['dayYear', param])
     return newDF
     
 def getMergedDF(sourceDF, dfList):
     dfFinal = pd.DataFrame(columns = ['dayYear'])
-    for x in dfList: 
-        #st.write(x)
+    for x in dfList:
         df = getDF(sourceDF, x['p'], x['e'])
         dfFinal = pd.merge(df, dfFinal, how='outer',on=['dayYear'])
     return dfFinal
 
 ### MONTHLY NORMALS SECTION    
-@st.cache(suppress_st_warning=True,allow_output_mutation=True)
-def getMonthlyNormalsData(noaa, m, y, s):
+@st.experimental_memo(suppress_st_warning=True)
+def getMonthlyNormalsData(_noaa, m, y, s):
     mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
     day = {'JAN':'01-31','FEB':'01-28','MAR':'01-31','APR':'01-30','MAY':'01-31','JUN':'01-30','JUL':'01-31','AUG':'01-31','SEP':'01-30','OCT':'01-31','NOV':'01-30','DEC':'01-31'}
     sta = {'OK CITY W ROGERS APT':'USW00013967','PENDLETON AIRPORT':'USW00024155','RALEIGH AIRPORT NC':'USW00013722'}                                         
@@ -46,8 +44,11 @@ def getMonthlyNormalsData(noaa, m, y, s):
         'MLY-SNOW-NORMAL', 'MLY-SNOW-AVGNDS-GE001TI', 'MLY-SNOW-AVGNDS-GE010TI',
         'MLY-TAVG-NORMAL', 'MLY-TAVG-STDDEV', 'MLY-TMAX-NORMAL', 'MLY-TMAX-STDDEV',
         'MLY-TMIN-NORMAL', 'MLY-TMIN-STDDEV', 'MLY-DUTR-NORMAL']
-    noaa.stationDataParams('NORMAL_MLY', (f'GHCND:{sta[s]}'), (f'2010-01-01') , (f'2010-12-01'), 1000, 'standard', [])
-    return noaa.df
+    tic3 = time.perf_counter()
+    df = _noaa.stationDataParams('NORMAL_MLY', (f'GHCND:{sta[s]}'), (f'2010-01-01') , (f'2010-12-01'), 1000, 'standard', [])
+    toc3 = time.perf_counter()
+    st.write(f"Ran noaa.stationDataParams() in {toc3 - tic3:0.4f} seconds")
+    return df
 
 def showMonthlyNormals(df, month, year, station):
     # functions to filter whole dataframe to retrive only records with specified parameter, and perfrom conversion 
@@ -65,7 +66,7 @@ def showMonthlyNormals(df, month, year, station):
     dfClean['TEMP-ADD-STD-POS'] = dfClean.apply(lambda d: (d['MLY-TAVG-NORMAL']+d['MLY-TAVG-STDDEV']), axis=1 )
     dfClean['TEMP-ADD-STD-NEG'] = dfClean.apply(lambda d: (d['MLY-TAVG-NORMAL']-d['MLY-TAVG-STDDEV']), axis=1 )
     
-    windAVGALL = getDailyWindALL(df, month, year, station)
+    windAVGALL = getDailyWindALL(df, year, station)
     monthlyNormalsPlots(dfClean, station , year, month, windAVGALL[0], windAVGALL[1])
   
 def monthlyNormalsPlots(df, station, year, month, wind, windGust):
@@ -153,9 +154,10 @@ def monthlyNormalsPlots(df, station, year, month, wind, windGust):
         st.pyplot(fig)
     
     #st.pyplot(fig)
-#@st.cache(suppress_st_warning=True)  
-def getDailyWindALL(df, m, y, s):
-    #st.write(df)
+@st.experimental_memo(suppress_st_warning=True) 
+def getDailyWindALL(df, y, s):
+    tic4 = time.perf_counter()
+    
     noaa = NOAAData()
     dfAWND = pd.DataFrame(columns = ['monNum','month','AWND_MEAN'])
     dfWSF5 = pd.DataFrame(columns = ['monNum','month','WSF5_MEAN'])
@@ -177,11 +179,14 @@ def getDailyWindALL(df, m, y, s):
         index += toDate
         dfAWND.loc[dfAWND.shape[0]] = [mon[month],month, meanAWND]
         dfWSF5.loc[dfWSF5.shape[0]] = [mon[month],month, meanWSF5]
-    
+    toc4 = time.perf_counter()
+    st.write(f"Ran getWind() in {toc4 - tic4:0.4f} seconds")
     return [dfAWND, dfWSF5]   
  
-### DAILY NORMALS SECTION     
+### DAILY NORMALS SECTION
+#@st.experimental_memo(suppress_st_warning=True)      
 def getDailyNormalsData(noaa, m, y, s):
+    
     mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
     day = {'JAN':'01-31','FEB':'01-28','MAR':'01-31','APR':'01-30','MAY':'01-31','JUN':'01-30','JUL':'01-31','AUG':'01-31','SEP':'01-30','OCT':'01-31','NOV':'01-30','DEC':'01-31'}
     sta = {'OK CITY W ROGERS APT':'USW00013967','PENDLETON AIRPORT':'USW00024155','RALEIGH AIRPORT NC':'USW00013722'}                                         
@@ -191,10 +196,15 @@ def getDailyNormalsData(noaa, m, y, s):
         'DLY-SNWD-PCTALL-GE001WI','DLY-SNWD-PCTALL-GE003WI','DLY-SNWD-PCTALL-GE005WI','DLY-SNWD-PCTALL-GE010WI',
         'DLY-TAVG-NORMAL','DLY-TAVG-STDDEV','DLY-TMAX-NORMAL','DLY-TMIN-NORMAL',
         'MTD-PRCP-NORMAL','MTD-SNOW-NORMAL','YTD-PRCP-NORMAL','YTD-SNOW-NORMAL' ]
+    tic5 = time.perf_counter()
+    
     noaa.stationDataParams('NORMAL_DLY', (f'GHCND:{sta[s]}'), (f'{2010}-{mon[m]}-{day[m][0:2]}') , (f'{2010}-{mon[m]}-{day[m][3:5]}'), 
         1000, 'standard', paramList)
+    toc5 = time.perf_counter()
+    st.write(f"Ran daily noaa.stationDataParams() in {toc5 - tic5:0.4f} seconds")
     return noaa
 
+#@st.experimental_memo(suppress_st_warning=True)
 def showDailyNormals(noaa, month, year, station):
     # functions to filter whole dataframe to retrive only records with specified parameter, and perfrom conversion 
     # format NOAA.df date attribute for hour and drop extraneous columns        
@@ -210,7 +220,7 @@ def showDailyNormals(noaa, month, year, station):
     dfClean = getMergedDF(noaa.df, paramList)
     dailyNormalsPlots(dfClean, station , year, month)
 
-
+#@st.experimental_memo(suppress_st_warning=True)
 def dailyNormalsPlots(df, station, year, month):
     # Final dataframe cleaning before plotting
     df['dayYear'] = df.apply(lambda d: (d['dayYear'][0:2]), axis=1)
@@ -333,28 +343,27 @@ def dailyNormalsPlots(df, station, year, month):
 
 
 ### DAILY DATA SECTION
-#@st.cache(suppress_st_warning=True, allow_output_mutation=True)  
-def getDailyData(noaa, m, y, s):
+@st.experimental_memo(suppress_st_warning=True) 
+def getDailyData(_noaa, m, y, s):
     mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
     day = {'JAN':'01-31','FEB':'01-28','MAR':'01-31','APR':'01-30','MAY':'01-31','JUN':'01-30','JUL':'01-31','AUG':'01-31','SEP':'01-30','OCT':'01-31','NOV':'01-30','DEC':'01-31'}
     sta = {'OK CITY W ROGERS APT':'USW00013967','PENDLETON AIRPORT':'USW00024155','RALEIGH AIRPORT NC':'USW00013722'}                                         
     
     paramList = ['AWND','PRCP','SNOW','TAVG','TMAX','TMIN','WSF5','WSF2']
-    noaa.stationDataParams('GHCND', (f'GHCND:{sta[s]}'), (f'{y}-{mon[m]}-{day[m][0:2]}') , (f'{y}-{mon[m]}-{day[m][3:5]}'), 1000, '', paramList)
-    return noaa
+    df = _noaa.stationDataParams('GHCND', (f'GHCND:{sta[s]}'), (f'{y}-{mon[m]}-{day[m][0:2]}') , (f'{y}-{mon[m]}-{day[m][3:5]}'), 1000, '', paramList)
+    return df
 
-def showDaily(noaa, station, year, month):
-    noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][8:10]), axis=1)
-    noaa.df = noaa.df.drop(['station','attributes','date'], axis=1)
+def showDaily(df, station, year, month):
+    df['dayYear'] = df.apply(lambda d: (d['date'][8:10]), axis=1)
+    df = df.drop(['station','attributes','date'], axis=1)
     # iterate through list of parameters and conversion expressions
     paramList = [{'p':'AWND', 'e':'*.223694'},{'p':'PRCP', 'e':'*0.1'},
-        {'p':'SNOW', 'e':'*0.1'},{'p':'TAVG', 'e':'*.18+32'},{'p':'TMAX', 'e':'*.18+32'},{'p':'TMIN', 'e':'*.18+32'},
+        {'p':'SNOW', 'e':'*0.1'},{'p':'TAVG'    , 'e':'*.18+32'},{'p':'TMAX', 'e':'*.18+32'},{'p':'TMIN', 'e':'*.18+32'},
         {'p':'WSF5', 'e':'*.223694'},{'p':'WSF2', 'e':'*.223694'},]
-    dfClean = getMergedDF(noaa.df, paramList)
+    dfClean = getMergedDF(df, paramList)
     dailyPlots(station, year,month, dfClean)
 
 def dailyPlots(station, year, month, dfM):
-    #st.write(f'<h1 style="text-align:center;margin-top:-100px;">{station}</h1>', unsafe_allow_html=True)
     st.write(f'<h4 style="text-align:center;margin:-40px;">Daily Weather Data</h4>', unsafe_allow_html=True)
     # column layout for side by side charts
     col1, col2 = st.columns([1,1])
@@ -477,14 +486,12 @@ def showHourlyNormals(noaa, station, year, month, day):
         {'p':'HLY-WIND-AVGSPD','e':''}, {'p':'HLY-WIND-1STDIR','e':''}, {'p':'HLY-WIND-PCTCLM','e':'*.10'}, {'p':'HLY-WIND-VCTDIR','e':'*.10'},
         {'p':'HLY-TEMP-10PCTL','e':''},{'p':'HLY-TEMP-90PCTL','e':''}]
     dfClean = getMergedDF(noaa.df, paramList)
-    #st.write(dfClean)
     hourlyNormalsPlots(dfClean, station,year, month, day)
 
 def hourlyNormalsPlots(df, station, year, month, day):
     # Final dataframe cleaning before plotting
     df['dayYear'] = df.apply(lambda d: (d['dayYear'][3:16]), axis=1)
     df.drop(df.tail(1).index,inplace = True)
-    #st.write(f'<h1 style="text-align:center;margin-top:-50px;">{station}</h1>', unsafe_allow_html=True)
     st.write(f'<h4 style="text-align:center;margin-top:-30px;">Hourly Normals Weather Data</h4>', unsafe_allow_html=True)
     WSF5c,WSF5e,WSF2c,WSF2e,AWNDc = '#1bab6b','#00542f','#72ab92','#00703f','#00ff8f'
     txtC = '#575757'

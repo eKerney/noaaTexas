@@ -1,4 +1,3 @@
-from turtle import color
 from attr import mutable
 import streamlit as st
 import pandas as pd

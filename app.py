@@ -12,8 +12,6 @@ import scipy
 from scipy import interpolate
 from scipy.interpolate import make_interp_spline
 #import seaborn as sns
-mpl.rcParams['text.color'] = '#575757'
-mpl.rcParams['axes.edgecolor'] = '#575757'
 pd.options.mode.chained_assignment = None  # default='warn'
 
 st.set_page_config(layout="wide")
@@ -29,8 +27,8 @@ def addMonths():
     st.markdown('---')
 
     #show daily data for specific month/year 2021 - 2014 
-    noaaDaily = getDailyData(noaa, month, year, station)
-    showDaily(noaaDaily, station, year, month)
+    noaaDaily = getDailyData(noaa, st.session_state.month, year, station)
+    showDaily(noaaDaily, station, year, st.session_state.month)
     st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - Daily Land Surface Observations </p>', unsafe_allow_html=True)
     st.markdown('---')
 
@@ -50,8 +48,8 @@ def addDays():
     st.markdown('---')
 
     # show hourly normals data
-    noaaHourly = getHourlyNormals(noaa, month, year, station, day)
-    showHourlyNormals(noaaHourly, station, year, month, day)
+    noaaHourly = getHourlyNormals(noaa, month, year, station, st.session_state.day)
+    showHourlyNormals(noaaHourly, station, year, month, st.session_state.day)
     st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Hourly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
     st.markdown('---')
 
@@ -80,8 +78,8 @@ def showStations():
     st.markdown('---')
     
     #show daily data for specific month/year 2021 - 2014 
-    noaaDaily = getDailyData(noaa, month, st.session_state.year, st.session_state.station)
-    showDaily(noaaDaily, st.session_state.station, st.session_state.year, month)
+    noaaDaily = getDailyData(noaa, st.session_state.month, st.session_state.year, st.session_state.station)
+    showDaily(noaaDaily, st.session_state.station, st.session_state.year, st.session_state.month)
     st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - Daily Land Surface Observations </p>', unsafe_allow_html=True)
     st.markdown('---')
 
@@ -103,19 +101,19 @@ if month == 'FEB':
     'SELECT DAY',
     options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
     '20','21','22','23','24','25','26','27','28'], 
-    on_change=addDays, key='day28')
+    on_change=addDays, key='day')
 elif month=='APR' or month=='JUN' or month=='SEP' or month=='NOV':
     day = st.sidebar.select_slider(
     'SELECT DAY',
     options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
     '20','21','22','23','24','25','26','27','28','29','30'],
-    on_change=addDays, key='day30')
+    on_change=addDays, key='day')
 else:
     day = st.sidebar.select_slider(
     'SELECT DAY',
     options=['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19',
     '20','21','22','23','24','25','26','27','28','29','30','31'],
-    on_change=addDays, key='day31') 
+    on_change=addDays, key='day') 
 
 if 'active' not in st.session_state:
     noaa = NOAAData()

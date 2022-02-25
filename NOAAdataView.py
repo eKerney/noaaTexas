@@ -13,7 +13,7 @@ from scipy import interpolate
 from scipy.interpolate import make_interp_spline
 import time
 
-mpl.rcParams['text.color'] = 'white'
+#mpl.rcParams['text.color'] = 'white'
 mpl.rcParams['axes.edgecolor'] = 'white'
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -70,7 +70,7 @@ def showMonthlyNormals(df, month, year, station):
   
 def monthlyNormalsPlots(df, station, year, month, wind, windGust):
     st.write(f'<h1 style="text-align:center;margin-top:-100px;">{station}</h1>', unsafe_allow_html=True)
-    st.write(f'<h3 style="text-align:center;margin-top:-30px;">Monthly Weather Suitability</h3>', unsafe_allow_html=True)
+    st.write(f'<h3 style="text-align:center;margin-top:-35px;margin-bottom:25px;">Market Weather Suitability</h3>', unsafe_allow_html=True)
     
     mic, mie, mac, mae, lc = '#188bad','#0c303b','#fc6603','#662900','#4903fc' 
     Pc, Pe, Sc, Se = '#006be6','#001a38','#5d6875','#22262b'
@@ -108,9 +108,10 @@ def monthlyNormalsPlots(df, station, year, month, wind, windGust):
     line1 = ax.plot(X_+width, TMAX, color = mac, linewidth=2.5, alpha=0.8,dashes=[3, 1, 3, 1, 2, 1])
     line2 = ax.plot(X_+width, TAVG, color = lc, linewidth=4.0, alpha=0.8)
     line3 = ax.plot(X_+width, TMIN, color = mic, linewidth=2.5, alpha=0.8, dashes=[2.5, 1, 2.5, 1, 2, 1])
-    line4 = ax.plot(X_+width, PRCP_01, color = AWNDc, linewidth=2.5, alpha=1.0,linestyle='dotted')
+    #line4 = ax.plot(X_+width, PRCP_01, color = AWNDc, linewidth=2.5, alpha=1.0,linestyle='dotted')
     line5 = ax.plot(X_+width, TPOS, color = '#a380ff', linewidth=1.0, alpha=0.8, linestyle='dotted')
     line6 = ax.plot(X_+width, TNEG, color = '#a380ff', linewidth=1.0, alpha=0.8, linestyle='dotted')
+    #line7 = ax.plot(ind+width, df['MLY-PRCP-AVGNDS-GE010HI'], color = AWNDc, linewidth=2.5, alpha=1.0,linestyle='dotted')
     ax.set_ylim([10, 100])
     plt.ylabel('Temp F',fontsize=12, color=txtC)
 
@@ -119,7 +120,8 @@ def monthlyNormalsPlots(df, station, year, month, wind, windGust):
     bar2 = ax2.bar(ind, df['MLY-SNOW-NORMAL'], width, color = Sc, edgecolor=Se, linewidth=1, alpha=0.7)
     bar3 = ax2.bar(ind+width, wind['AWND_MEAN'], width, color = WSF2c, edgecolor=WSF2e, linewidth=1, alpha=0.5)
     bar4 = ax2.bar(ind+width+.2, windGust['WSF5_MEAN'], width, color = WSF5c, edgecolor=WSF5e, linewidth=1, alpha=0.6)
-    ax2.set_ylim([0, 60])
+    line4 = ax2.plot(X_+width, PRCP_01, color = AWNDc, linewidth=2.5, alpha=1.0,linestyle='dotted')
+    ax2.set_ylim([0, 80])
    
     plt.xticks(ind+width/2,df['dayYear'])
     legend_elements = [
@@ -132,9 +134,9 @@ def monthlyNormalsPlots(df, station, year, month, wind, windGust):
         Patch(facecolor=WSF2c, edgecolor=WSF2e, label='Avg Mon Wind Spd mph'),
         Patch(facecolor=WSF5c, edgecolor=WSF5e, label='Avg Mon Wind Gust mph'),
         ]
-    plt.legend(facecolor='#21272c', handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.8, loc='upper left', fontsize=8)
+    plt.legend(labelcolor='white', facecolor='#171c1f', handles=legend_elements, fancybox=True, borderpad=0.9, framealpha=0.4, loc='upper left', fontsize=8)
     plt.xticks(rotation = 90, fontsize=12) 
-    plt.title((f'{station} - Monthly Climate Normals'), fontsize=20, color=txtC, pad=30, )
+    plt.title((f'Monthly Climate Normals  '), fontsize=24, color=txtC, pad=30, )
     ax.set_facecolor('#21272c')
     fig.patch.set_facecolor('#21272c')
     ax.tick_params(axis='y', colors=txtC)
@@ -150,7 +152,6 @@ def monthlyNormalsPlots(df, station, year, month, wind, windGust):
     col1, col2,col3 = st.columns([1,10,1])
     with col2:
         st.pyplot(fig)
-    
     #st.pyplot(fig)
 @st.experimental_memo(suppress_st_warning=True, show_spinner=False) 
 def getDailyWindALL(df, y, s):
@@ -245,7 +246,7 @@ def dailyNormalsPlots(df, station, year, month):
         Line2D([0], [0], color='yellow', lw=3, label='DLY-PRCP-PCTALL-GE050HI'),
         Line2D([0], [0], color='green', lw=3, label='DLY-PRCP-PCTALL-GE100HI'),
         ]
-    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
+    plt.legend(labelcolor='white', facecolor='#171c1f', handles=legend_elements, fancybox=True, borderpad=0.9, framealpha=0.4, loc='upper right', fontsize=8)
     plt.xticks(rotation = 90, fontsize=10) 
     plt.title((f'Probability of Precip >= 0.01 in for 29-day windows - {month}'), fontsize=20, color=txtC, pad=30, )
     plt.gca().spines['top'].set_visible(False)
@@ -275,7 +276,7 @@ def dailyNormalsPlots(df, station, year, month):
         Line2D([0], [0], color='yellow', lw=3, label='DLY-PRCP-PCTALL-GE050HI'),
         Line2D([0], [0], color='green', lw=3, label='DLY-PRCP-PCTALL-GE100HI'),
         ]
-    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
+    plt.legend(labelcolor='white', facecolor='#171c1f', handles=legend_elements, fancybox=true, borderpad=0.9, framealpha=0.4, loc='upper right', fontsize=8)(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
     plt.xticks(rotation = 90, fontsize=10) 
     plt.title((f'Probability of Precip >= 0.01 in for 29-day windows - {month}'), fontsize=20, color=txtC, pad=30, )
     plt.gca().spines['top'].set_visible(False)
@@ -302,7 +303,7 @@ def dailyNormalsPlots(df, station, year, month):
         Patch(facecolor=mic, edgecolor=mae, label='Daily Avg Temp Min'),
         Line2D([0], [0], color='red', lw=3, label='Daily Avg Temp '),
         Line2D([0], [0], color=lc, lw=3, label='Daily Avg Temp Standard Dev.(x * 0.5)')]
-    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
+    plt.legend(labelcolor='white', facecolor='#171c1f', handles=legend_elements, fancybox=true, borderpad=0.9, framealpha=0.4, loc='upper right', fontsize=8)(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
     plt.xticks(rotation = 90, fontsize=10) 
     plt.title((f'{station} - DAILY-TEMPERATURE-NORMALS - {month}'), fontsize=20, color='#575757',pad=30)
     plt.gca().spines['top'].set_visible(False)
@@ -329,7 +330,7 @@ def dailyNormalsPlots(df, station, year, month):
     legend_elements = [
         Line2D([0], [0], color='red', lw=3, label='Avg Daily Temp Range Std Dev.'),
         Line2D([0], [0], color=lc, lw=3, label='Daily Avg Temp Standard Dev.')]
-    plt.legend(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
+    plt.legend(labelcolor='white', facecolor='#171c1f', handles=legend_elements, fancybox=true, borderpad=0.9, framealpha=0.4, loc='upper right', fontsize=8)(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
     plt.xticks(rotation = 90, fontsize=10) 
     plt.title((f'{station} - DAILY DIURNAL TEMPERATURE RANGE - {month}'), fontsize=20, color='#575757',pad=30)
     plt.gca().spines['top'].set_visible(False)
@@ -362,7 +363,7 @@ def showDaily(df, station, year, month):
     dailyPlots(station, year, month, dfClean)
 
 def dailyPlots(station, year, month, dfM):
-    st.write(f'<h4 style="text-align:center;margin:-40px;">Daily Weather Data</h4>', unsafe_allow_html=True)
+    st.write(f'<h4 style="text-align:center;margin:-40px;">Daily Weather Data - {station}</h4>', unsafe_allow_html=True)
     # column layout for side by side charts
     col1, col2 = st.columns([1,1])
     txtC = 'white'
@@ -375,14 +376,14 @@ def dailyPlots(station, year, month, dfM):
     bar1 = ax.bar(ind+width, dfM['WSF5'], width, color=WSF5c, edgecolor=WSF5e, linewidth=1, alpha=0.9)
     bar2 = ax.bar(ind, dfM['WSF2'], width, color = WSF2c, edgecolor=WSF2e, linewidth=1, alpha=0.7)
     line1 = ax.plot(ind+width, dfM['AWND'], color = AWNDc, linewidth=3.0, alpha=0.7)
-    plt.ylabel('mph', fontsize=12, color=txtC)
+    plt.ylabel('MPH', fontsize=14, color=txtC)
     plt.xticks(ind+width/2,dfM['dayYear'], color=txtC)
     legend_elements = [Patch(facecolor=WSF5c, edgecolor=WSF5e, label='Max Wind Gust'),
         Patch(facecolor=WSF2c, edgecolor=WSF2e, label='Sustained Wind'),
         Line2D([0], [0], color=AWNDc, lw=3, label='Avg Daily Wind')]
-    plt.legend(facecolor='#21272c', handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.8, loc='upper right')
-    plt.xticks(rotation = 90, fontsize=8, color=txtC) 
-    plt.title((f'{station} - DAILY WIND DATA - {month} {year}'), fontsize=20, color=txtC, pad=30, )
+    plt.legend(labelcolor='white', facecolor='#171c1f', handles=legend_elements, fancybox=True, borderpad=0.9, framealpha=0.4, loc='upper right', fontsize=12)
+    plt.xticks(rotation = 90, fontsize=12, color=txtC) 
+    plt.title((f'Daily Wind Speed - {month} {year}'), fontsize=24, color=txtC, pad=30, )
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
     plt.gca().spines['bottom'].set_visible(False)
@@ -403,14 +404,14 @@ def dailyPlots(station, year, month, dfM):
     bar1 = ax.bar(ind+width, dfM['TMAX'], width, color=mac, edgecolor=mae, linewidth=1, alpha=0.7)
     bar2 = ax.bar(ind, dfM['TMIN'], width, color = mic, edgecolor=mie, linewidth=1, alpha=0.8)
     line1 = ax.plot(ind+width, dfM['TAVG'], color = lc, linewidth=4.0, alpha=1.0)
-    plt.ylabel('F',fontsize=12, color=txtC)
+    plt.ylabel('Fahrenheit',fontsize=14, color=txtC)
     plt.xticks(ind+width/2,dfM['dayYear'])
     legend_elements = [Patch(facecolor=mac, edgecolor=mae, label='Max Temperature'),
         Patch(facecolor=mic, edgecolor=mae, label='Min Temperature'),
         Line2D([0], [0], color=lc, lw=3, label='Avg Daily Temp')]
-    plt.legend(facecolor='#21272c', handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
-    plt.xticks(rotation = 90, fontsize=8) 
-    plt.title((f'{station} - DAILY TEMP DATA - {month} {year}'), fontsize=20, color=txtC ,pad=30)
+    plt.legend(labelcolor='white', facecolor='#171c1f', handles=legend_elements, fancybox=True, borderpad=0.9, framealpha=0.4, loc='upper right', fontsize=12)
+    plt.xticks(rotation = 90, fontsize=12) 
+    plt.title((f'Daily Temperature Ranges - {month} {year}'), fontsize=24, color=txtC ,pad=30)
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
     plt.gca().spines['bottom'].set_visible(False)
@@ -418,7 +419,7 @@ def dailyPlots(station, year, month, dfM):
     fig.patch.set_facecolor('#21272c')
     ax.tick_params(axis='y', colors=txtC)
     ax.tick_params(axis='x', colors=txtC)
-    ax.set_ylim([-10, 120])
+    ax.set_ylim([0, 120])
     with col2:
         st.pyplot(fig)
     
@@ -429,18 +430,18 @@ def dailyPlots(station, year, month, dfM):
     width = 0.4
     Pc, Pe, Sc, Se = '#006be6','#001a38','#5d6875','#22262b'
     bar1 = ax.bar(ind, dfM['PRCP'], width, color=Pc, edgecolor=Pe, linewidth=1, alpha=0.9)
-    plt.ylabel('precip mm',fontsize=12, color=txtC)
+    plt.ylabel('Precipitation mm',fontsize=14, color=txtC)
     plt.xticks(ind+width/2,dfM['dayYear'])
     legend_elements = [Patch(facecolor=Pc, edgecolor=Pe, label='Precipitation', alpha=0.8),
         Patch(facecolor=Sc, edgecolor=Se, label='Snow',alpha=0.7)]
-    plt.legend(facecolor='#21272c', handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.8, loc='upper right')
-    plt.xticks(rotation = 90, fontsize=8) 
-    plt.title((f'{station} - DAILY PRECIP DATA - {month} {year}'), fontsize=20, color='white', pad=30)
+    plt.legend(labelcolor='white', facecolor='#171c1f', handles=legend_elements, fancybox=True, borderpad=0.9, framealpha=0.4, loc='upper right', fontsize=12)
+    plt.xticks(rotation = 90, fontsize=12) 
+    plt.title((f'Daily Precipitation - {month} {year}'), fontsize=24, color='white', pad=30)
     ax.set_ylim([0, 50])
     # make a plot with different y-axis using second axis object
     ax2 = ax.twinx() 
     ax2.bar(ind+width, dfM['SNOW'], width, color = Sc, edgecolor=Se, linewidth=1, alpha=0.9)
-    ax2.set_ylabel("snow cm",fontsize=14, color=txtC)
+    ax2.set_ylabel("Snow cm",fontsize=14, color=txtC)
     ax2.set_ylim([0, 50])
     ax2.spines['bottom'].set_visible(False)
     ax2.spines['top'].set_visible(False)
@@ -452,6 +453,11 @@ def dailyPlots(station, year, month, dfM):
     ax.tick_params(axis='x', colors=txtC)
     ax2.tick_params(axis='y', colors=txtC)
     ax2.tick_params(axis='x', colors=txtC)
+
+    #format dataframe column headings
+    c = dfM.columns
+    dfM.rename(columns={c[0]:'Day',c[1]:'2 Min Sust Wind Speed', c[2]:'5 Sec Wind Gust', c[3]:'Min Temperature', c[4]:'Max Temperature',
+        c[5]:'Avg Temperature', c[6]:'Snow cm', c[7]:'Precipitation mm', c[8]:'Avg Daily Wind Speed'}, inplace=True)
     # side by side layout for plot and table
     cl1, cl2 = st.columns([1,1])
     with cl1:
@@ -503,7 +509,7 @@ def hourlyNormalsPlots(df, station, year, month, day):
     # Final dataframe cleaning before plotting
     df['dayYear'] = df.apply(lambda d: (d['dayYear'][3:16]), axis=1)
     df.drop(df.tail(1).index,inplace = True)
-    st.write(f'<h4 style="text-align:center;margin-top:-30px;">Hourly Normals Weather Data</h4>', unsafe_allow_html=True)
+    st.write(f'<h4 style="text-align:center;margin-top:-30px;">Hourly Normals Weather Data - {station}</h4>', unsafe_allow_html=True)
     WSF5c,WSF5e,WSF2c,WSF2e,AWNDc = '#1bab6b','#00542f','#72ab92','#00703f','#00ff8f'
     txtC = 'white'
     # plot for hourly windspeed 
@@ -514,14 +520,14 @@ def hourlyNormalsPlots(df, station, year, month, day):
     Pc, Pe, Sc, Se = '#006be6','#001a38','#5d6875','#22262b'
     bar1 = ax.bar(ind, df['HLY-WIND-AVGSPD'], width, color=WSF5c, edgecolor=WSF5e, linewidth=1, alpha=0.8)
     #line1 = ax.plot(ind+width, df['HLY-WIND-1STDIR'], color = AWNDc, linewidth=3.0, alpha=0.9)
-    plt.ylabel('windSpeed mph',fontsize=14, color=txtC)
+    plt.ylabel('MPH',fontsize=14, color=txtC)
     plt.xticks(ind+width/2,df['dayYear'])
     legend_elements = [Patch(facecolor=WSF5c, edgecolor=WSF5e, label='Avg Hour Wind Speed'),
         Patch(facecolor=WSF2c, edgecolor=WSF2e, label='% Calm Winds'),
         Line2D([0], [0], color=AWNDc, lw=3, label='Wind Dir Degrees * 10')]
-    plt.legend(facecolor='#21272c',handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
+    plt.legend(labelcolor='white', facecolor='#171c1f', handles=legend_elements, fancybox=True, borderpad=0.9, framealpha=0.4, loc='upper right', fontsize=12)
     plt.xticks(rotation = 90, fontsize=12) 
-    plt.title((f'{station} - HOURLY WIND AVG - {month} {day} 1981-2010'), fontsize=20, color=txtC, pad=30)
+    plt.title((f'Hourly Average Wind Speed 1981-2010 - {month} {day}'), fontsize=24, color=txtC, pad=30)
     ax.set_ylim([2, 16])
     # make a plot with different y-axis using second axis object
     ax2 = ax.twinx() 
@@ -553,13 +559,13 @@ def hourlyNormalsPlots(df, station, year, month, day):
     bar1 = ax.bar(ind+width, df['HLY-CLOD-PCTOVC'], width, color=Pc, edgecolor=Pe, linewidth=1, alpha=0.6)
     bar2 = ax.bar(ind, df['HLY-CLOD-PCTCLR'], width, width, color=Sc, edgecolor=Se, linewidth=1, alpha=0.6)
     #line1 = ax.plot(ind+width, df['HLY-CLOD-PCTOVC'], color = AWNDc, linewidth=3.0, alpha=0.7)
-    plt.ylabel('%', fontsize=16, color=txtC)
+    plt.ylabel('Percent %', fontsize=14, color=txtC)
     plt.xticks(ind+width/2,df['dayYear'])
     legend_elements = [Patch(facecolor=Pc, edgecolor=Pe, label='Hourly Overcast %', alpha=0.8),
         Patch(facecolor=Sc, edgecolor=Se, label='Hourly Clear %',alpha=0.7)]
-    plt.legend(facecolor='#21272c', handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
+    plt.legend(labelcolor='white', facecolor='#171c1f', handles=legend_elements, fancybox=True, borderpad=0.9, framealpha=0.4, loc='upper right', fontsize=12)
     plt.xticks(rotation = 90, fontsize=12) 
-    plt.title((f'{station} - HOURLY CLOUD AVG - {month} {day} 1981-2010'), fontsize=20, color=txtC, pad=30, )
+    plt.title((f'Hourly Average Cloud Cover 1981-2010 - {month} {day}'), fontsize=24, color=txtC, pad=30, )
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
     plt.gca().spines['bottom'].set_visible(False)
@@ -585,16 +591,16 @@ def hourlyNormalsPlots(df, station, year, month, day):
     line1 = ax.plot(ind+width, df['HLY-TEMP-NORMAL'], color = lc, linewidth=4.0, alpha=1.0)
     line1 = ax.plot(ind+width, df['HLY-DEWP-NORMAL'], color = 'green', linewidth=4.0, alpha=0.8)
     
-    plt.ylabel('F',fontsize=14, color=txtC)
+    plt.ylabel('Fahrenheit',fontsize=14, color=txtC)
     plt.xticks(ind+width/2,df['dayYear'])
     legend_elements = [Patch(facecolor=mac, edgecolor=mae, label='Hourly 90th percentile'),
         Patch(facecolor=mic, edgecolor=mae, label='Hourly 10th percentile'),
         Line2D([0], [0], color=lc, lw=3, label='Hourly Temp Avg'),
         Line2D([0], [0], color='red', lw=3, label='Hourly Heat Index Avg'),
         Line2D([0], [0], color='green', lw=3, label='Hourly Dew Point Avg')]
-    plt.legend(facecolor='#21272c',handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
+    plt.legend(labelcolor='white', facecolor='#171c1f', handles=legend_elements, fancybox=True, borderpad=0.9, framealpha=0.4, loc='upper right', fontsize=12)
     plt.xticks(rotation = 90, fontsize=12) 
-    plt.title((f'{station} - HOURLY TEMP AVG - {month} 1981 - 2010'), fontsize=20, color=txtC,pad=30)
+    plt.title((f'Hourly Average Temperature 1981 - 2010 - {month} {day}'), fontsize=24, color=txtC,pad=30)
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
     plt.gca().spines['bottom'].set_visible(False)
@@ -603,6 +609,12 @@ def hourlyNormalsPlots(df, station, year, month, day):
     fig.patch.set_facecolor('#21272c')
     ax.tick_params(axis='y', colors=txtC)
     ax.tick_params(axis='x', colors=txtC)
+    
+    # Format dataframe column headers
+    c = df.columns
+    df.rename(columns={c[0]:'Day',c[1]:'Hourly Temp 90th Percentile', c[2]:'Hourly Temp 10th Percentile', c[3]:'Hourly Wind Vector Dir', 
+    c[4]:'Hourly Wind % Calm',c[5]:'Hourly Wind Dir', c[6]:'Hourly Avg Wind Speed', c[7]:'Hourly Pressure', c[8]:'Hourly % Clear', 
+    c[9]:'Hourly % Overcast', c[10]:'Hourly Dewpoint', c[11]:'Hourly Heat Index', c[12]:'Hourly Temp'}, inplace=True)
     cl1, cl2 = st.columns([1,1])
     with cl1:
         st.pyplot(fig)

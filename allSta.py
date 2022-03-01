@@ -77,21 +77,22 @@ def showStations():
     noaa = NOAAData()
     st.session_state.active = True
     # Fetch monthly summary data and show plots    
-    noaaMonthly = getMonthlyNormalsData(noaa, month, year, st.session_state.station)
-    showMonthlyNormals(noaaMonthly, month, year, st.session_state.station)
+    noaaMonthly = getMonthlyNormalsData(noaa, month, year, st.session_state.station, dfSta)
+    showMonthlyNormals(noaaMonthly, month, year, st.session_state.station, dfSta)
     st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
     st.markdown('---')
     
     #show daily data for specific month/year 2021 - 2014 
-    noaaDaily = getDailyData(noaa, st.session_state.month, st.session_state.year, st.session_state.station)
+    noaaDaily = getDailyData(noaa, st.session_state.month, st.session_state.year, st.session_state.station, dfSta)
     showDaily(noaaDaily, st.session_state.station, st.session_state.year, st.session_state.month)
-    st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - Daily Land Surface Observations </p>', unsafe_allow_html=True)
-    st.markdown('---')
+    #st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - Daily Land Surface Observations </p>', unsafe_allow_html=True)
+    #st.markdown('---')
 
 # sliders and widgets
+dfSta = pd.read_csv('data/noaaApt.csv')
 station = st.sidebar.selectbox(
     'SELECT STATION',
-    ('PENDLETON AIRPORT','OK CITY W ROGERS APT','RALEIGH AIRPORT NC'), 
+    (dfSta['desc']), 
     on_change=showStations, key='station')     
 year = st.sidebar.selectbox(
         'SELECT YEAR',
@@ -123,8 +124,8 @@ else:
 if 'active' not in st.session_state:
     noaa = NOAAData()
     # Fetch monthly summary data and show plots    
-    noaaMonthly = getMonthlyNormalsData(noaa, month, year, station)
-    showMonthlyNormals(noaaMonthly, month, year, station)
+    noaaMonthly = getMonthlyNormalsData(noaa, month, year, station, dfSta)
+    showMonthlyNormals(noaaMonthly, month, year, station, dfSta)
     st.write(f'<p style="text-align:center;margin-bottom:0px">Data: NOAA Global Historical Climate Network (GHCN) - U.S. Monthly Climate Normals 1981-2010 </p>', unsafe_allow_html=True)
     st.markdown('---')
 

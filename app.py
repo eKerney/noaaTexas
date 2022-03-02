@@ -91,7 +91,7 @@ def showStations():
 # sliders and widgets
 station = st.sidebar.selectbox(
     'SELECT STATION',
-    ('PENDLETON AIRPORT','OK CITY W ROGERS APT','RALEIGH AIRPORT NC'), 
+    ('ARLINGTON MUNI AP','DALLAS FT WORTH AP','WORTH NAS'), 
     on_change=showStations, key='station')     
 year = st.sidebar.selectbox(
         'SELECT YEAR',
